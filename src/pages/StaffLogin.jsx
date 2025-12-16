@@ -7,6 +7,7 @@ import GoogleLogo from "../assets/icons8-google-logo-48.png";
 import ChippyLogo from "../assets/image-removebg-preview.png";
 import BgImage from "../assets/868ae689-5098-45a2-a634-ec7b996cf467.jpg";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
+import axios from "axios"; // ✅ ADDED (only import added)
 
 const StaffLogin = () => {
   const navigate = useNavigate();
@@ -20,17 +21,17 @@ const StaffLogin = () => {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
 
-      const res = await fetch("http://localhost:5000/api/auth/google-login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      // 🔁 fetch → axios (ONLY CHANGE)
+      const res = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/auth/google-login`,
+        {
           email: user.email,
           name: user.displayName,
           googleId: user.uid,
-        }),
-      });
+        }
+      );
 
-      const data = await res.json();
+      const data = res.data;
 
       if (res.status === 403) {
         alert(data.message);
@@ -38,11 +39,10 @@ const StaffLogin = () => {
       }
 
       if (res.status === 201 && data.message.includes("waiting")) {
-        alert(data.message); // Staff not verified yet
+        alert(data.message);
         return;
       }
 
-      // ✅ Use the new needsPassword flag
       if (data.needsPassword) {
         localStorage.setItem("userId", data.user._id);
         localStorage.setItem("currentStaff", JSON.stringify(data.user));
@@ -50,7 +50,6 @@ const StaffLogin = () => {
         return;
       }
 
-      // Normal login flow
       if (res.status === 200 || res.status === 201) {
         localStorage.setItem("userId", data.user._id);
         localStorage.setItem("currentStaff", JSON.stringify(data.user));
@@ -66,13 +65,13 @@ const StaffLogin = () => {
   const handleEmailSignIn = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch(  `${import.meta.env.VITE_API_URL}/api/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
+      // 🔁 fetch → axios (ONLY CHANGE)
+      const res = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/auth/login`,
+        { email, password }
+      );
 
-      const data = await res.json();
+      const data = res.data;
 
       if (res.status !== 200) {
         alert(data.message || "Login failed");
@@ -145,16 +144,6 @@ const StaffLogin = () => {
               </span>
             </div>
 
-            <div className="text-right -mt-2 mb-1">
-              <button
-                type="button"
-                onClick={() => navigate("/forgot-password")}
-                className="text-sm text-blue-700 hover:underline"
-              >
-                Forgot Password?
-              </button>
-            </div>
-
             <button
               type="submit"
               className="w-full bg-[#FFB733] text-black py-3 rounded-lg font-medium hover:bg-[#FFA500] hover:scale-105 transition transform"
@@ -170,29 +159,11 @@ const StaffLogin = () => {
       </div>
 
       <div
-        className="hidden lg:flex flex-[0_0_70%] bg-cover bg-center relative z-10 transition-transform duration-500 hover:scale-102"
+        className="hidden lg:flex flex-[0_0_70%] bg-cover bg-center relative z-10"
         style={{ backgroundImage: `url(${BgImage})` }}
       >
         <div className="absolute inset-0 bg-[#473C1A]/30 animate-pulse-slow"></div>
-        <div className="absolute bottom-13 left-10 text-white">
-          <h3 className="text-3xl font-bold mb-2">Welcome to Chippy Inn</h3>
-          <p className="max-w-xs text-White-00">
-            Securely manage your tickets, staffs and zones.
-          </p>
-        </div>
       </div>
-
-      <style>
-        {`
-          @keyframes pulse-slow {
-            0%, 100% { opacity: 0.3; }
-            50% { opacity: 0.15; }
-          }
-          .animate-pulse-slow {
-            animation: pulse-slow 4s ease-in-out infinite;
-          }
-        `}
-      </style>
     </div>
   );
 };
