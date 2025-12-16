@@ -1,0 +1,566 @@
+/* Enhanced Tabs */
+.ticket-tabs {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #e0e0e0;
+  position: relative;
+  margin-top: -1rem;
+}
+
+.ticket-tabs button {
+  padding: 10px 20px;
+  border: none;
+  background: transparent;
+  font-size: 15px;
+  font-weight: 500;
+  color: #555;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.ticket-tabs button:hover {
+  color: #007bff;
+}
+
+.ticket-tabs button.active {
+  color: #fff; 
+  font-weight: 600;
+}
+
+.ticket-tabs button.active::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: #1e293b;
+  border-radius: 3px 3px 0 0;
+  transition: width 0.3s ease;
+}
+
+.ticket-icon {
+  font-size: 1rem;
+  color: #ef4444;
+}
+.ticket-id {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #111827;
+}
+
+/* Optional: Smooth underline transition on hover */
+.ticket-tabs button::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  width: 0;
+  height: 3px;
+  background: #007bff;
+  border-radius: 3px 3px 0 0;
+  transition: 0.3s all ease;
+}
+
+.ticket-tabs button:hover::after {
+  left: 0;
+  width: 100%;
+}
+
+/* Filters */
+.ticket-card-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 0px;
+}
+
+.ticket-card-filters input,
+.ticket-card-filters select {
+  padding: 8px 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  min-width: 150px;
+}
+
+/* Tickets Grid */
+.ticket-card-container.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+  margin-top: -1rem;
+}
+
+/* Ticket Card */
+.ticket-card {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s, box-shadow 0.2s;
+  position: relative; /* for pseudo-element border and ribbon */
+  overflow: hidden;
+}
+
+.ticket-card:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
+}
+
+/* Card Header */
+.card-header {
+  display: flex;
+  align-items: center;
+}
+
+.card-header .ticket-id {
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+}
+
+/* Priority Badges */
+.badge.low { background-color: #3b82f6; }
+.badge.medium { background-color: #f97316; }
+.badge.high { background-color: #f80505; }
+
+/* Status Badges */
+.badge {
+  padding: 0.2rem 0.45rem;
+  border-radius: 9999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #fff;
+  text-transform: capitalize;
+}
+
+.status-pending { 
+  background-color: #facc15; 
+  color: #111; 
+}
+.status-in-progress { 
+  background-color: #3b82f6; 
+}
+.status-resolved { 
+  background-color: #10b981; 
+}
+
+
+.card-header .badge { margin-left: 0; }
+
+/* Card Body */
+.card-body div {
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.ticket-location div { margin-bottom: 4px; }
+
+.assigned-badge {
+  background: #e0f0ff;
+  color: #007bff;
+  padding: 5px 10px;
+  border-radius: 5px;
+  font-weight: 500;
+  display: inline-block;
+  margin-bottom: 8px;
+}
+
+/* Accept / Pending Buttons - Enhanced */
+.accept-btn {
+  width: 100%;
+  padding: 10px 0;
+  background-color: #28a745;
+  color: #fff;
+  font-weight: 600;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-top: 8px;
+  transition: all 0.3s ease;
+}
+
+.accept-btn:hover {
+  background-color: #218838; /* deeper green */
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+  transform: translateY(-2px) scale(1.03);
+}
+
+/* Accepted / Disabled Button */
+.accepted-btn {
+  width: 100%;
+  padding: 10px 0;
+  background-color: #6c757d;
+  color: #fff;
+  font-weight: 600;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  margin-top: 8px;
+  cursor: not-allowed;
+  opacity: 0.7;
+  transition: all 0.3s ease;
+}
+
+.accepted-btn:hover {
+  background-color: #6c757d; /* keep disabled color */
+  transform: none;
+  box-shadow: none;
+}
+
+
+/* Reset Filters Button */
+/* Reset Filters Button - Enhanced */
+.reset-btn {
+  background: #f0f0f0;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  margin-left: 10px;
+}
+
+.reset-btn:hover {
+  background: #ffffff; /* brightens on hover */
+  border-color: #999;  /* slightly darker border */
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1); /* subtle floating effect */
+  transform: translateY(-2px) scale(1.02); /* pop effect */
+}
+
+
+.reset-btn:hover { background: #e0e0e0; }
+
+/* Hold Card & Resolved Card pseudo-element borders */
+.ticket-card.on-hold-card::before,
+.ticket-card.resolved-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 6px;
+  height: 100%;
+  border-radius: 8px 0 0 8px;
+  z-index: 2;
+}
+
+.ticket-card.on-hold-card::before { background-color: red; }
+.ticket-card.resolved-card::before { background-color: #10b981; }
+
+.ticket-card.on-hold-card {
+  background-color: #ffe6e6;
+}
+.ticket-card.resolved-card {
+  background-color: #f0fff4;
+}
+
+/* Progress Actions */
+.progress-actions { display: flex; gap: 10px; margin-top: 10px; }
+
+/* Hold Button - Enhanced */
+.hold-btn {
+  background: #ff4d4d;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.hold-btn:hover {
+  background: #ff1a1a; /* deeper red on hover */
+  box-shadow: 0 4px 10px rgba(255, 0, 0, 0.3);
+  transform: translateY(-2px) scale(1.03);
+}
+
+/* Resolve Button - Enhanced */
+.resolve-btn {
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.resolve-btn:hover {
+  background: #1db954; /* brighter green on hover */
+  box-shadow: 0 4px 10px rgba(40, 167, 69, 0.3);
+  transform: translateY(-2px) scale(1.03);
+}
+
+
+/* Disabled Buttons */
+.disabled-btn {
+  background-color: #ccc !important;
+  cursor: not-allowed !important;
+  opacity: 0.7;
+}
+
+/* Expand Toggle */
+.expand-toggle, .expandable-text-container .expand-toggle {
+  font-weight: 800 !important;
+  color: #0056d6;
+}
+
+/* Last Updated */
+.ticket-card .last-updated {
+  font-size: 12px;
+  color: #999;
+  margin-top: 12px;
+  text-align: left;
+}
+
+/* Updated Remarks / Input Styling - Enhanced */
+input[placeholder="Enter updated remarks"] {
+  width: 100%;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  margin-bottom: 8px;
+  background-color: #f9f9f9;       /* light grey background */
+  transition: all 0.3s ease;       /* smooth transition */
+  font-size: 14px;
+  color: #111;
+}
+
+/* On hover */
+input[placeholder="Enter updated remarks"]:hover {
+  background-color: #fff;           /* turns white on hover */
+  border-color: #007bff;           /* subtle blue border */
+  box-shadow: 0 2px 6px rgba(0, 123, 255, 0.2);
+}
+
+/* On focus */
+input[placeholder="Enter updated remarks"]:focus {
+  background-color: #fff;
+  border-color: #007bff;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15);
+}
+
+/* On-Hold Ribbon */
+.on-hold-ribbon {
+  bottom: 18px;      
+  right: -25px;      
+  width: 100px;
+  background: #dc3545;
+  color: #fff;
+  font-weight: bold;
+  font-size: 12px;
+  text-align: center;
+  position: absolute;
+  transform: rotate(-45deg);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  pointer-events: none;
+  z-index: 10;
+  animation: pulse 1.8s ease-in-out infinite;
+}
+
+/* Resolved Ribbon */
+.resolved-ribbon {
+  bottom: 18px;
+  right: -25px;
+  width: 100px;
+  background: #28a745;
+  color: #fff;
+  font-weight: bold;
+  font-size: 12px;
+  text-align: center;
+  position: absolute;
+  transform: rotate(-45deg);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  pointer-events: none;
+  z-index: 10;
+  animation: pulse 1.8s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%   { filter: brightness(1); }
+  50%  { filter: brightness(1.25); }
+  100% { filter: brightness(1); }
+}
+
+/* Sticky Animated Pagination */
+.pagination {
+  bottom: 0;
+  background: f7f3;
+  padding: 12px 20px;
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+  z-index: 20;
+  animation: slideUp 0.4s ease-out;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+
+
+.pagination button,
+.pagination-page-btn {
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  background: #f2f2f2;
+  transition: 0.25s ease;
+}
+
+.pagination button:hover:not(:disabled),
+.pagination-page-btn:hover:not(.active) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+}
+
+/* Active page */
+.pagination-page-btn.active {
+  background: #007bff;
+  color: white;
+  transform: scale(1.05);
+  box-shadow: 0 4px 10px rgba(0, 123, 255, 0.4);
+}
+
+/* Disabled */
+.pagination button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+/* ============================================
+   GLOBAL SHINE EFFECT FOR ALL BUTTONS
+   ============================================ */
+
+button,
+.accept-btn,
+.accepted-btn,
+.hold-btn,
+.resolve-btn,
+.reset-btn,
+.pagination button,
+.pagination-page-btn,
+.ticket-tabs button {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Shine bar */
+button::after,
+.accept-btn::after,
+.accepted-btn::after,
+.hold-btn::after,
+.resolve-btn::after,
+.reset-btn::after,
+.pagination button::after,
+.pagination-page-btn::after,
+.ticket-tabs button::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -80px;
+  width: 60px;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.45);
+  transform: skewX(-20deg);
+  transition: 0.5s ease;
+  pointer-events: none;
+}
+
+/* Move shine on hover */
+button:hover::after,
+.accept-btn:hover::after,
+.accepted-btn:hover::after,
+.hold-btn:hover::after,
+.resolve-btn:hover::after,
+.reset-btn:hover::after,
+.pagination button:hover::after,
+.pagination-page-btn:hover::after,
+.ticket-tabs button:hover::after {
+  left: 120%;
+}
+
+/* Tablets */
+@media (max-width: 768px) {
+  .ticket-tabs button {
+    font-size: 14px !important;   /* readable on tablets */
+    padding: 8px 6px !important;  /* reduce padding */
+    white-space: normal;           /* allow text to wrap */
+    line-height: 1.2;              /* tighter line spacing */
+  }
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+  .ticket-tabs button {
+    font-size: 13px !important;   /* smaller font */
+    padding: 6px 4px !important;  /* reduce padding */
+    white-space: normal;           
+    line-height: 1.2;
+  }
+}
+
+/* Very small screens: 320px - 400px */
+@media (max-width: 400px) {
+  .ticket-tabs button {
+    font-size: 12px !important;   /* smallest readable font */
+    padding: 5px 3px !important;  
+    white-space: normal;           
+    line-height: 1.15;             /* slightly tighter for tiny screens */
+  }
+}
+.my-tickets-page {
+  margin:0;          /* remove any default margin */
+  padding: 10px;      /* constant padding for all layouts */
+  display: flex;
+  flex-direction: column;
+}
+
+/* ================= My Tickets Header Fix ================= */
+
+.myticket-header {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  gap: 6px;
+}
+
+/* Status left, Priority right */
+.myticket-header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+/* Ticket ID fully left below */
+.myticket-header-bottom {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+}
+
+/* Ticket ID */
+.myticket-header-bottom .ticket-id {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+  .myticket-header-bottom .ticket-id {
+    font-size: 0.8rem;
+  }
+}

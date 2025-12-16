@@ -1,0 +1,29 @@
+
+body {
+  background-color: #eeece6; /* Eggshell shade */
+  margin: 0;
+  padding: 0;
+}
+
+.new-ticket-highlight:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,0.08); }
+.new-ticket-highlight {
+  border: 2px solid #fbbf24;
+  background-color: #ffffff;
+  animation: newTicketPulse 1.8s ease-in-out infinite;
+  border-radius: 12px;
+}
+
+@keyframes newTicketPulse {
+  0% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.5); }
+  100% { box-shadow: 0 0 12px 6px rgba(251, 191, 36, 0); }
+}
+
+
+/* ---------------- Global Page Titles ---------------- */
+
+
+/* Default desktop sizes */
+html, body, #root {
+  width: 100%;
+  overflow-x: hidden !important;
+}

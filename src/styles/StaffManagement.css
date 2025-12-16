@@ -1,0 +1,548 @@
+.staff-management-container {
+  margin: auto;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.page-title {
+  font-size: 2rem;
+  font-weight: 600;
+  margin-bottom: 20px;
+  color: #1e293b;
+}
+
+/* Add Staff Form */
+.add-staff-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 25px;
+}
+
+.add-staff-form input,
+.add-staff-form select {
+  flex: 1;
+  min-width: 180px;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  font-size: 0.95rem;
+}
+
+.add-staff-form button {
+  padding: 10px 18px;
+  border: none;
+  border-radius: 6px;
+  background: #1e293b;
+  color: white;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.add-staff-form button:hover {
+  background: #334155;
+}
+
+/* Filters */
+.staff-filters {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.staff-filters input,
+.staff-filters select {
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.95rem;
+}
+
+/* Staff Cards */
+.staff-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.staff-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 16px;
+  box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.06);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.staff-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0px 6px 14px rgba(0, 0, 0, 0.1);
+}
+
+.staff-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.staff-header strong {
+  font-size: 1rem;
+  color: #111827;
+}
+
+.staff-header .email {
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+/* Role Badge */
+.role-badge {
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.role-badge.admin {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.role-badge.staff {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+/* Actions */
+.staff-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.staff-role label {
+  font-size: 0.85rem;
+  margin-right: 6px;
+  color: #374151;
+}
+
+.staff-role select {
+  padding: 5px 8px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+/* Status Buttons */
+.status-btn {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: background 0.2s ease;
+}
+
+.status-btn.active {
+  background: #10b981;
+  color: white;
+}
+
+.status-btn.inactive {
+  background: #ef4444;
+  color: white;
+}
+
+/* Role Pills */
+.role-pills {
+  display: flex;
+  gap: 8px;
+  margin: 0 10px;
+}
+
+.pill {
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1px solid #cbd5e1;
+  background: #f1f5f9;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: 0.2s;
+}
+
+.pill.active {
+  background: #1e293b;
+  color: white;
+  border-color: #1e293b;
+}
+
+/* "You" tag */
+.you-tag {
+  background: #facc15;
+  color: #1e293b;
+  font-weight: 600;
+  font-size: 0.75rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-left: 6px;
+}
+/* "You" tag for logged-in staff */
+.you-tag {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 6px;
+  background-color: #facc15; /* professional yellow */
+  color: #1f2937; /* dark text for contrast */
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 9999px; /* pill shape */
+  text-transform: uppercase;
+}
+
+/* ===================== PAGINATION (Added from TicketHistory) ===================== */
+
+.pagination {
+  bottom: 0;
+  padding: 12px 20px;
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+  z-index: 20;
+  animation: slideUp 0.4s ease-out;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.pagination button,
+.pagination-page-btn {
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  background: #f2f2f2;
+  transition: 0.25s ease;
+}
+
+.pagination button:hover:not(:disabled),
+.pagination-page-btn:hover:not(.active) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+}
+
+.pagination-page-btn.active {
+  background: #007bff;
+  color: white;
+  transform: scale(1.05);
+  box-shadow: 0 4px 10px rgba(0, 123, 255, 0.4);
+}
+
+.pagination button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* ---------------- Staff Performance Page ---------------- */
+.staff-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.staff-card {
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+  padding: 16px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.staff-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+}
+
+.staff-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.staff-name strong {
+  font-size: 16px;
+  color: #333;
+}
+
+.staff-name .email {
+  font-size: 13px;
+  color: #666;
+  margin-left: 4px;
+}
+
+.performance-stats {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.stat-box {
+  flex: 1 1 45%;
+  background-color: #f3f4f6;
+  border-radius: 10px;
+  padding: 12px;
+  text-align: center;
+  transition: background-color 0.2s;
+}
+
+.stat-box:hover {
+  background-color: #e5e7eb;
+}
+
+.stat-box label {
+  display: block;
+  font-size: 13px;
+  color: #555;
+  margin-bottom: 4px;
+}
+
+.stat-number {
+  font-size: 20px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.no-staff {
+  text-align: center;
+  color: #666;
+  font-size: 14px;
+  margin-top: 20px;
+}
+
+/* Responsive tweak */
+@media (max-width: 600px) {
+  .performance-stats {
+    flex-direction: column;
+  }
+  .stat-box {
+    flex: 1 1 100%;
+  }
+}
+/* ---------------- Staff Performance Page: Resolved Hover ---------------- */
+/* Add these at the bottom of your existing CSS */
+
+/* Class specifically for resolved tickets number */
+.stat-resolved {
+  color: #111827; /* default color */
+  transition: color 0.2s;
+}
+.stat-created {
+  color: #111827; /* default color */
+  transition: color 0.2s;
+}
+
+/* When hovering over the resolved stat-box, number turns green */
+.stat-box.resolved:hover .stat-resolved {
+  color: #1b8832; /* Tailwind green-700 */
+}
+
+/* When hovering over the resolved stat-box, number turns green */
+.stat-box.created:hover .stat-created {
+  color: #163188; /* Tailwind green-700 */
+}
+
+/* ================= Mobile Layout (up to 480px) ================= */
+/* ===== Global Staff Page Styling for Responsiveness ===== */
+
+
+/* ===== Small laptops / tablets (max-width: 1024px) ===== */
+@media (max-width: 1024px) {
+  /* Search / Filters */
+  .staff-filters input,
+  .staff-filters select {
+    padding: 6px 8px;
+    font-size: 0.85rem;
+  }
+
+  /* Add Staff Form */
+  .add-staff-form input,
+  .add-staff-form select {
+    padding: 6px 8px;
+    font-size: 0.85rem;
+    min-width: 140px;
+  }
+
+  .add-staff-form button {
+    padding: 6px 10px;
+    font-size: 0.85rem;
+  }
+
+  /* Staff Cards */
+  .staff-card {
+    padding: 12px 14px;
+  }
+
+  .staff-header strong,
+  .staff-name strong {
+    font-size: 0.95rem;
+  }
+
+  .staff-header .email,
+  .staff-name .email {
+    font-size: 0.8rem;
+  }
+
+  /* Role badge, pills, you-tag */
+  .role-badge,
+  .pill,
+  .you-tag {
+    font-size: 0.7rem;
+    padding: 3px 5px;
+  }
+
+  /* Status buttons */
+  .staff-actions .status-btn {
+    padding: 5px 10px;
+    font-size: 0.8rem;
+  }
+
+  /* Performance stats */
+  .performance-stats {
+    gap: 8px;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .stat-box {
+    padding: 8px 10px;
+    font-size: 0.85rem;
+  }
+
+  /* Pagination */
+  .pagination button,
+  .pagination-page-btn {
+    padding: 5px 10px;
+    font-size: 0.8rem;
+  }
+}
+
+/* ===== Mobile / small screens (max-width: 480px) ===== */
+@media (max-width: 480px) {
+  /* Search / Filters */
+  .staff-filters input,
+  .staff-filters select {
+    padding: 5px 6px;
+    font-size: 0.75rem;
+  }
+
+  /* Add Staff Form */
+  .add-staff-form input,
+  .add-staff-form select {
+    padding: 5px 6px;
+    font-size: 0.75rem;
+    min-width: 120px;
+  }
+
+  .add-staff-form button {
+    padding: 5px 8px;
+    font-size: 0.75rem;
+  }
+
+  /* Staff Cards */
+  .staff-card {
+    padding: 8px 10px;
+  }
+
+  .staff-header strong,
+  .staff-name strong {
+    font-size: 0.85rem;
+  }
+
+  .staff-header .email,
+  .staff-name .email {
+    font-size: 0.7rem;
+  }
+
+  /* Role badge, pills, you-tag */
+  .role-badge,
+  .pill,
+  .you-tag {
+    font-size: 0.6rem;
+    padding: 2px 4px;
+  }
+
+  /* Status buttons */
+  .staff-actions .status-btn {
+    padding: 4px 8px;
+    font-size: 0.7rem;
+  }
+
+  /* Performance stats */
+  .performance-stats {
+    gap: 6px;
+    flex-direction: column;
+  }
+
+  .stat-box {
+    padding: 6px 8px;
+    font-size: 0.75rem;
+  }
+
+  /* Pagination */
+  .pagination button,
+  .pagination-page-btn {
+    padding: 4px 8px;
+    font-size: 0.7rem;
+  }
+}
+
+
+/* Global Page Title */
+.page-title {
+  font-size: 1.5rem; /* desktop */
+  font-weight: 600;
+  margin: 0; /* remove default h2 margin */
+  margin-bottom: 0.5rem; /* consistent gap below title */
+  color: #111827;
+}
+
+/* Tabs container spacing */
+.ticket-tabs {
+  margin-top: 0; /* remove extra top margin */
+  margin-bottom: 1rem; /* consistent gap below tabs */
+  display: flex;
+  gap: 10px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+  .page-title {
+    font-size: 1.35rem;
+    margin-bottom: 0.45rem;
+  }
+  .ticket-tabs {
+    margin-bottom: 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-title {
+    font-size: 1.1rem;
+    margin-bottom: 0.4rem;
+  }
+  .ticket-tabs {
+    margin-bottom: 0.6rem;
+    gap: 6px;
+  }
+}

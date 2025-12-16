@@ -1,0 +1,205 @@
+/* Container */
+.staff-login-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+   /* background-color: #fafafa; */
+}
+
+.staff-login-page .left-section {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  z-index: 10;
+  background-color: #F0EADC;
+}
+
+.staff-login-page .login-card {
+  width: 100%;
+  max-width: 24rem;
+  background: #fff;
+  padding: 2rem;
+  border-radius: 2rem;
+  border: 1px solid #d1d1d1;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  transition: 0.3s all;
+}
+
+.staff-login-page .login-card:hover {
+  transform: scale(1.05);
+  box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+}
+
+/* Logos & Heading */
+.staff-login-page .login-card img {
+  display: block;
+  margin: 0 auto 1.5rem;
+}
+
+.staff-login-page .login-card h2 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+  font-weight: 400;
+  color: #000;
+}
+
+/* Google Sign-in Button */
+.staff-login-page .google-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.75rem;
+  background-color: #FFB733;
+  border: 1px solid #d1d1d1;
+  border-radius: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: 0.3s all;
+  margin-bottom: 1rem;
+}
+
+.staff-login-page .google-btn:hover {
+  background-color: #FFA500;
+  transform: scale(1.05);
+}
+
+.staff-login-page .google-btn img {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+/* Divider */
+.staff-login-page .divider {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
+
+.staff-login-page .divider hr {
+  flex: 1;
+  border-color: #d1d1d1;
+}
+
+.staff-login-page .divider span {
+  font-size: 0.875rem;
+  color: #000;
+}
+
+/* Form Inputs */
+.staff-login-page .login-card input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  border: 1px solid #d1d1d1;
+  outline: none;
+  font-size: 1rem;
+  color: #000;
+  transition: 0.2s all;
+}
+
+.staff-login-page .login-card input:focus {
+  border-color: #FFB733;
+  box-shadow: 0 0 0 2px rgba(255, 183, 51, 0.3);
+}
+
+/* Password eye icon */
+.staff-login-page .password-wrapper {
+  position: relative;
+}
+
+.staff-login-page .password-wrapper span {
+  position: absolute;
+  top: 50%;
+  right: 0.75rem;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #6b7280; /* gray */
+}
+
+/* Submit Button */
+.staff-login-page .login-card button[type="submit"] {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: #FFB733;
+  border-radius: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: 0.3s all;
+}
+
+.staff-login-page .login-card button[type="submit"]:hover {
+  background-color: #FFA500;
+  transform: scale(1.05);
+}
+
+/* Footer Text */
+.staff-login-page .login-card p {
+  text-align: center;
+  font-size: 0.875rem;
+  color: #000;
+  margin-top: 1.5rem;
+}
+
+/* Right Section */
+.staff-login-page .right-section {
+  display: none;
+  flex: 1;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  z-index: 10;
+  transition: transform 0.5s;
+}
+
+.staff-login-page .right-section:hover {
+  transform: scale(1.02);
+}
+
+.staff-login-page .right-section .overlay {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(71, 60, 26, 0.3);
+  animation: pulse-slow 4s ease-in-out infinite;
+}
+
+.staff-login-page .right-section .text-overlay {
+  position: absolute;
+  bottom: 3rem;
+  left: 2.5rem;
+  color: white;
+}
+
+.staff-login-page .right-section .text-overlay h3 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.staff-login-page .right-section .text-overlay p {
+  max-width: 20rem;
+  color: #fff;
+}
+
+/* Pulse animation */
+@keyframes pulse-slow {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.15; }
+}
+
+/* Media Queries */
+@media (min-width: 768px) {
+  .staff-login-page {
+    flex-direction: row;
+  }
+
+  .staff-login-page .right-section {
+    display: block;
+  }
+}

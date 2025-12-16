@@ -1,0 +1,194 @@
+.zone-management-container {
+  padding: 20px;
+  max-width: 900px;
+  margin: auto;
+}
+
+.page-title {
+  font-size: 1.8rem;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+/* Add New Zone Form */
+.add-zone-form {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 25px;
+  margin-top: 25px;
+}
+.add-zone-form input {
+  flex: 1;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+}
+.add-zone-form button {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  background: #1e293b;
+  color: white;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+.add-zone-form button:hover {
+  background: #334155;
+}
+
+/* Accordion Zone Cards */
+.zone-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  overflow: hidden;
+  box-shadow: 0px 2px 6px rgba(0,0,0,0.05);
+  transition: transform 0.2s ease;
+}
+.zone-card:hover {
+  transform: translateY(-2px);
+}
+.zone-header {
+  background: #f1f5f9;
+  padding: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+.zone-header:hover {
+  background: #e2e8f0;
+}
+
+.zone-body {
+  padding: 12px;
+}
+
+/* Branch Card */
+.branch-card {
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 8px;
+  margin-bottom: 8px;
+}
+.branch-header {
+  font-weight: 500;
+  margin-bottom: 6px;
+}
+
+/* Rooms */
+.rooms-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+.room-badge {
+  background: #bfdbfe;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+}
+
+/* Add Branch & Add Room Forms */
+.add-branch-form,
+.add-room-form {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+}
+.add-branch-form input,
+.add-room-form input {
+  flex: 1;
+  padding: 6px;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+}
+.add-branch-form button,
+.add-room-form button {
+  padding: 6px 10px;
+  border: none;
+  border-radius: 6px;
+  background: #1e293b;
+  color: white;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.3s ease;
+}
+.add-branch-form button:hover,
+.add-room-form button:hover {
+  background: #334155;
+}
+
+/* ================= Mobile Layout (up to 480px) ================= */
+@media (max-width: 480px) {
+
+  /* Container padding */
+  .zone-management-container {
+    padding: 10px;
+  }
+
+  /* Page title */
+  .page-title {
+    font-size: 1.2rem;
+    margin-bottom: 12px;
+  }
+
+  /* Add Zone Form */
+  .add-zone-form input {
+    padding: 4px 6px;
+    font-size: 0.75rem;
+  }
+  .add-zone-form button {
+    padding: 4px 6px;
+    font-size: 0.75rem;
+  }
+
+  /* Zone Cards */
+  .zone-card {
+    padding: 6px;
+  }
+  .zone-header {
+    padding: 6px 8px;
+    font-size: 0.85rem;
+  }
+  .zone-body {
+    padding: 6px 8px;
+  }
+
+  /* Branch Card */
+  .branch-card {
+    padding: 4px 6px;
+  }
+  .branch-header {
+    font-size: 0.8rem;
+  }
+
+  /* Rooms */
+  .rooms-list {
+    gap: 4px;
+  }
+  .room-badge {
+    font-size: 0.7rem;
+    padding: 2px 6px;
+  }
+
+  /* Add Branch & Add Room Forms */
+  .add-branch-form input,
+  .add-room-form input {
+    padding: 4px 6px;
+    font-size: 0.7rem;
+  }
+  .add-branch-form button,
+  .add-room-form button {
+    padding: 4px 6px;
+    font-size: 0.7rem;
+  }
+
+  /* Overall: smaller gaps */
+  .add-zone-form,
+  .add-branch-form,
+  .add-room-form,
+  .rooms-list {
+    gap: 4px;
+  }
+}

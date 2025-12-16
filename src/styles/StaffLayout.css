@@ -1,0 +1,91 @@
+/* Stack everything vertically */
+.dashboard-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* Sidebar + Main Content */
+.layout-body {
+  display: flex;
+  flex: 1; /* take remaining height */
+}
+
+/* Sidebar stays fixed width */
+.sidebar {
+  width: 220px;
+  flex-shrink: 0;
+}
+
+/* Main content grows to fill space */
+.main-content {
+  flex: 1;
+  padding: 1rem 2rem;
+  margin-top: 64px; /* if header is fixed */
+}
+
+/* Footer always at bottom */
+footer {
+  width: 100%;
+  margin-top: auto;
+}
+
+.ticket-card:has(.status-closed) {
+  border: 2px solid #e27814ff !important;
+  border-radius: 10px;
+  background-color: #fff;
+  box-shadow: none;
+  padding: 18px;
+}
+
+/* =========================================
+   MOBILE RESPONSIVE SIDEBAR (320px–480px)
+========================================= */
+@media (max-width: 480px) {
+
+  /* Sidebar width becomes smaller on mobile */
+  .sidebar {
+    width: 170px !important;
+  }
+
+  /* Sidebar menu text (medium size like WhatsApp) */
+  .sidebar a,
+  .sidebar .menu-item,
+  .sidebar li,
+  .sidebar span {
+    font-size: 0.90rem !important;  /* Medium readable text */
+    line-height: 1.2rem !important;
+  }
+
+  /* Optional: reduce sidebar icon size */
+  .sidebar i,
+  .sidebar svg {
+    width: 18px !important;
+    height: 18px !important;
+  }
+
+  /* Sidebar item padding shrink */
+  .sidebar .menu-item,
+  .sidebar a {
+    padding: 8px 10px !important;
+  }
+
+  /* Main content padding also reduced for mobile */
+  .main-content {
+    padding: 0.75rem 1rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+
+  .sidebar {
+    width: 170px !important;
+
+    /* 👇 FORCE SIDEBAR TO BE TALLER */
+    min-height: 1000px !important;
+
+    max-height: none !important; /* Remove previous restriction */
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+}   

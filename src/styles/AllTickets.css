@@ -1,0 +1,137 @@
+/* Global font for dashboard & tickets */
+body, .all-tickets-container, .main-content, .ticket-card-wrapper {
+  font-family: "Inter", "Segoe UI", "Roboto", "Helvetica Neue", sans-serif;
+}
+
+/* Date navigation below cards */
+.date-navigation {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 1rem 0;
+  font-weight: 500;
+}
+.date-navigation span {
+  font-size: 0.95rem;
+  color: #1e293b;
+}
+.date-navigation button {
+  background-color: #3b82f6;
+  color: white;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+.date-navigation button:hover:not(:disabled) {
+  background-color: #2563eb;
+}
+.date-navigation button:disabled {
+  background-color: #9ca3af;
+  cursor: not-allowed;
+}
+
+
+/* Pagination container */
+.pagination {
+  display: flex;
+  gap: 8px;
+  margin: 0 auto;
+  padding: 6px 10px;
+  justify-content: center;
+}
+
+/* Pagination buttons */
+.pagination button {
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  background: white;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: 
+    transform 0.25s ease,
+    background-color 0.25s ease,
+    border-color 0.25s ease;
+}
+
+/* Hover animation */
+.pagination button:hover:not(.active) {
+  transform: translateY(-2px);
+  border-color: #3b82f6;
+}
+
+/* Active page */
+.pagination button.active {
+  background: #3b82f6;
+  color: white;
+  border-color: #3b82f6;
+  transform: translateY(-2px);
+  font-weight: 600;
+  box-shadow: 0 3px 6px rgba(59, 130, 246, 0.35);
+}
+
+/* Disabled state */
+.pagination button:disabled {
+  background: #e5e7eb;
+  border-color: #d1d5db;
+  color: #9ca3af;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 480px) {
+  .pagination button {
+    padding: 4px 8px;
+    font-size: 0.8rem;
+  }
+  .pagination {
+    gap: 5px;
+  }
+}
+.card-header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+/* Top line: status left, priority right */
+.header-top {
+  display: flex;
+  justify-content: space-between; /* left and right alignment */
+  align-items: center;
+  width: 100%; /* make full width */
+}
+
+/* Bottom line: icon and ticket ID */
+.header-bottom {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: flex-start; /* push left */
+  width: 100%; /* make full width */
+}
+
+
+.ticket-icon {
+  font-size: 1rem;
+  color: #ef4444;
+}
+
+.ticket-id {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #111827;
+}
+
+.header-top .badge,
+.header-bottom .badge {
+  font-size: 0.75rem;
+  padding: 2px 6px;
+  text-transform: capitalize;
+  border-radius: 12px;
+}
