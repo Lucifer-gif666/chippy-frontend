@@ -55,7 +55,7 @@ const MyTickets = () => {
 
   const fetchTickets = async () => {
     try {
-      const res = await axios.get(`http://localhost:5000/api/tickets${staffId ? `?staffId=${staffId}` : ""}`);
+      const res = await axios.get(`http://localhost:5300/api/tickets${staffId ? `?staffId=${staffId}` : ""}`);
       setTickets(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       console.error(err);
