@@ -14,6 +14,8 @@ import ClosedTicketWrapper from "../ReusableComp/ClosedTicketWrapper";
 // ✅ Browser notification helper
 import { showBrowserNotification } from "../utils/browserNotifications";
 
+const API_BASE_URL = import.meta.env.VITE_API_URL;
+
 const MyTickets = () => {
   const [tickets, setTickets] = useState([]);
   const [activeTab, setActiveTab] = useState("assigned");
@@ -55,7 +57,7 @@ const MyTickets = () => {
 
   const fetchTickets = async () => {
     try {
-      const res = await axios.get(`http://localhost:5300/api/tickets${staffId ? `?staffId=${staffId}` : ""}`);
+      const res = await axios.get(`${API_BASE_URL}/api/tickets${staffId ? `?staffId=${staffId}` : ""}`);
       setTickets(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       console.error(err);
@@ -128,7 +130,7 @@ const MyTickets = () => {
 
     setLoadingTickets((prev) => ({ ...prev, [ticketId]: true }));
     try {
-      await axios.patch(`http://localhost:5000/api/tickets/accept/${ticketId}`);
+      await axios.patch(`${API_BASE_URL}/api/tickets/accept/${ticketId}`);
       showBrowserNotification("Ticket Accepted", `${currentStaff.name} accepted ticket ${ticket.ticketId}`);
       toast.success(`Ticket ${ticket.ticketId} accepted!`);
       await fetchTickets();
@@ -154,7 +156,7 @@ const MyTickets = () => {
 
     setLoadingTickets((prev) => ({ ...prev, [ticketId]: true }));
     try {
-      await axios.patch(`http://localhost:5000/api/tickets/resolve/${ticketId}`, { 
+      await axios.patch(`${API_BASE_URL}/api/tickets/resolve/${ticketId}`, { 
         updatedRemarks,
         resolvedBy: currentStaff?.name,
         resolvedById: currentStaff?._id
@@ -185,7 +187,7 @@ const handleHold = async (ticketId) => {
   setLoadingTickets((prev) => ({ ...prev, [ticketId]: true }));
 
   try {
-    await axios.patch(`http://localhost:5000/api/tickets/hold/${ticketId}`, {
+    await axios.patch(`${API_BASE_URL}/api/tickets/hold/${ticketId}`, {
       updatedRemarks: "On Hold",
       heldBy: currentStaff?.name,
       heldById: currentStaff?._id,
