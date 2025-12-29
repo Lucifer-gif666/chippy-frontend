@@ -7,15 +7,12 @@ import ExpandableText from "../components/ExpandableText";
 import LastUpdated from "../components/LastUpdated";
 import ClosedTicketWrapper from "../ReusableComp/ClosedTicketWrapper";
 
-// ✅ API base URL from ENV (Netlify / localhost safe)
+// ✅ API base URL from env (NO localhost hardcode)
 const API_BASE_URL = import.meta.env.VITE_API_URL;
-
-if (!API_BASE_URL) {
-  throw new Error("❌ VITE_API_URL is not defined");
-}
 
 const AllTickets = () => {
   const [tickets, setTickets] = useState([]);
+  const [highlightTicket, setHighlightTicket] = useState(null);
   const rowRefs = useRef({});
   const TICKETS_PER_PAGE = 12;
   const [currentPage, setCurrentPage] = useState(1);
@@ -27,11 +24,10 @@ const AllTickets = () => {
   const [filterStatus, setFilterStatus] = useState("");
   const [filterDate, setFilterDate] = useState("");
 
-  // 🔥 Fetch Tickets (NO localhost)
+  // Fetch Tickets
   const fetchTickets = async () => {
     try {
       const res = await axios.get(`${API_BASE_URL}/api/tickets`);
-
       const normalized = Array.isArray(res.data)
         ? res.data.map((t) => ({
             ...t,
@@ -39,16 +35,14 @@ const AllTickets = () => {
             priority: t.priority?.toLowerCase(),
           }))
         : [];
-
       const sorted = normalized.sort(
         (a, b) =>
           new Date(`${b.createdDate}T${b.createdTime || "00:00"}`) -
           new Date(`${a.createdDate}T${a.createdTime || "00:00"}`)
       );
-
       setTickets(sorted);
     } catch (err) {
-      console.error("❌ Failed to fetch tickets:", err);
+      console.error(err);
     }
   };
 
@@ -66,26 +60,24 @@ const AllTickets = () => {
     setCurrentPage(1);
   }, [filterText, filterZone, filterPriority, filterStatus, filterDate]);
 
-  // Helpers
+  // Normalize status for dropdown
   const normalizeStatus = (s) => (s ? s.toLowerCase().replace(/\s+/g, "-") : "");
 
-  // Filter tickets
+  // Filtered tickets
   const filteredTickets = tickets.filter((t) => {
     const matchesText = filterText
       ? (t.ticketId || "").toLowerCase().includes(filterText.toLowerCase()) ||
         (t.createdBy || "").toLowerCase().includes(filterText.toLowerCase()) ||
         (t.zoneNo || "").toLowerCase().includes(filterText.toLowerCase())
       : true;
-
     const matchesZone = filterZone ? t.zoneNo === filterZone : true;
     const matchesPriority = filterPriority ? t.priority === filterPriority.toLowerCase() : true;
     const matchesStatus = filterStatus ? normalizeStatus(t.status) === filterStatus : true;
     const matchesDate = filterDate ? t.createdDate?.startsWith(filterDate) : true;
-
     return matchesText && matchesZone && matchesPriority && matchesStatus && matchesDate;
   });
 
-  // Dropdown values
+  // Dynamic dropdown options
   const zones = [...new Set(filteredTickets.map((t) => t.zoneNo).filter(Boolean))];
   const priorities = [...new Set(filteredTickets.map((t) => t.priority).filter(Boolean))];
   const statuses = [...new Set(filteredTickets.map((t) => normalizeStatus(t.status)).filter(Boolean))];
@@ -103,50 +95,64 @@ const AllTickets = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // Date / time formatters
   const formatDate = (dateStr) => {
     if (!dateStr) return "";
-    const d = new Date(dateStr);
-    return `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}`;
+    const date = new Date(dateStr);
+    const dd = String(date.getDate()).padStart(2, "0");
+    const mm = String(date.getMonth() + 1).padStart(2, "0");
+    const yyyy = date.getFullYear();
+    return `${dd}/${mm}/${yyyy}`;
   };
 
   const formatTime = (timeStr) => {
     if (!timeStr) return "";
-    const d = new Date(`1970-01-01T${timeStr}`);
-    let h = d.getHours();
-    const m = String(d.getMinutes()).padStart(2, "0");
-    const ampm = h >= 12 ? "PM" : "AM";
-    h = h % 12 || 12;
-    return `${h}:${m} ${ampm}`;
+    const date = new Date(`1970-01-01T${timeStr}`);
+    let hours = date.getHours();
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+    const ampm = hours >= 12 ? "PM" : "AM";
+    hours = hours % 12 || 12;
+    return `${hours}:${minutes} ${ampm}`;
   };
 
   return (
     <StaffLayout>
       <h2 className="page-title">All Tickets</h2>
 
-      {/* Filters */}
       <div className="ticket-card-filters">
-        <input placeholder="Search by Ticket ID, Creator, Zone..." value={filterText} onChange={(e) => setFilterText(e.target.value)} />
+        <input
+          placeholder="Search by Ticket ID, Creator, Zone..."
+          value={filterText}
+          onChange={(e) => setFilterText(e.target.value)}
+        />
         <select value={filterZone} onChange={(e) => setFilterZone(e.target.value)}>
           <option value="">All Zones</option>
-          {zones.map((z) => <option key={z} value={z}>{z}</option>)}
+          {zones.map((zone) => (
+            <option key={zone} value={zone}>{zone}</option>
+          ))}
         </select>
         <select value={filterPriority} onChange={(e) => setFilterPriority(e.target.value)}>
           <option value="">All Priorities</option>
-          {priorities.map((p) => <option key={p} value={p}>{p}</option>)}
+          {priorities.map((p) => (
+            <option key={p} value={p}>{p}</option>
+          ))}
         </select>
         <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
           <option value="">All Status</option>
-          {statuses.map((s) => <option key={s} value={s}>{s.replace("-", " ")}</option>)}
+          {statuses.map((s) => (
+            <option key={s} value={s}>{s.replace("-", " ")}</option>
+          ))}
         </select>
         <input type="date" value={filterDate} onChange={(e) => setFilterDate(e.target.value)} />
-        <button className="reset-btn" onClick={() => {
-          setFilterText("");
-          setFilterZone("");
-          setFilterPriority("");
-          setFilterStatus("");
-          setFilterDate("");
-        }}>
+        <button
+          className="reset-btn"
+          onClick={() => {
+            setFilterText("");
+            setFilterZone("");
+            setFilterPriority("");
+            setFilterStatus("");
+            setFilterDate("");
+          }}
+        >
           Reset Filters
         </button>
       </div>
@@ -160,21 +166,39 @@ const AllTickets = () => {
             const onHold = t.remarks?.toLowerCase().includes("on hold");
             const isResolved = t.status === "resolved";
             const remarksMain = t.remarks
-              ? t.remarks.replace(/on hold/gi, "").split("| Updated:")[0].trim() || "No remarks"
+              ? t.remarks.replace(/on hold/gi, "").replace(/\s\s+/g, " ").split("| Updated:")[0].trim() || "No remarks"
               : "No remarks";
-            const updatedRemarks = t.remarks?.includes("| Updated:")
-              ? t.remarks.split("| Updated:")[1].trim()
-              : "";
+            const updatedRemarks =
+              t.remarks && t.remarks.includes("| Updated:")
+                ? t.remarks.split("| Updated:")[1].trim()
+                : "";
 
             if (t.status === "closed") {
               return (
                 <ClosedTicketWrapper key={t._id} status={t.status} ticketId={t.ticketId}>
                   <div className="ticket-card closed-card">
+                    <div className="card-header">
+                      <div className="header-top">
+                        <span className={`badge status-${t.status}`}>{normalizeStatus(t.status)}</span>
+                        <span className={`badge ${t.priority?.toLowerCase() || "low"}`}>{t.priority}</span>
+                      </div>
+                      <div className="header-bottom">
+                        <span className="ticket-icon">🎫</span>
+                        <span className="ticket-id">{t.ticketId}</span>
+                      </div>
+                    </div>
                     <div className="card-body">
                       <div><strong>Created By:</strong> {t.createdBy}</div>
                       <div><strong>Created On:</strong> {formatDate(t.createdDate)} {formatTime(t.createdTime)}</div>
-                      <ExpandableText text={remarksMain} maxLength={70} />
-                      <LastUpdated date={t.lastUpdated || t.updatedAt || t.createdAt} />
+                      <div><strong>Zone:</strong> {t.zoneNo}</div>
+                      <div><strong>Apartment:</strong> {t.apartmentName}</div>
+                      <div><strong>Room:</strong> {t.roomNo}</div>
+                      <div className="remarks-wrapper" style={{ marginTop: 6 }}>
+                        <strong>Remarks:</strong> <ExpandableText text={remarksMain} maxLength={70} />
+                      </div>
+                      {t.assignedTo && <div className="assigned-badge"><strong>Assigned To:</strong> {t.assignedTo}</div>}
+                      {updatedRemarks && <div className="updated-remarks"><strong>Updated Remarks:</strong> <ExpandableText text={updatedRemarks} maxLength={70} /></div>}
+                      <LastUpdated date={t.lastUpdated || t.updatedAt || t.createdDate || t.createdAt} />
                     </div>
                   </div>
                 </ClosedTicketWrapper>
@@ -182,15 +206,31 @@ const AllTickets = () => {
             }
 
             return (
-              <div key={t._id} className={`ticket-card ${isResolved ? "resolved-card" : ""}`}>
+              <div className={`ticket-card ${isResolved ? "resolved-card" : ""}`} key={t._id}>
                 {onHold && <div className="on-hold-ribbon">ON HOLD</div>}
                 {isResolved && <div className="resolved-ribbon">RESOLVED</div>}
+                <div className="card-header">
+                  <div className="header-top">
+                    <span className={`badge status-${t.status}`}>{normalizeStatus(t.status)}</span>
+                    <span className={`badge ${t.priority?.toLowerCase() || "low"}`}>{t.priority}</span>
+                  </div>
+                  <div className="header-bottom">
+                    <span className="ticket-icon">🎫</span>
+                    <span className="ticket-id">{t.ticketId}</span>
+                  </div>
+                </div>
                 <div className="card-body">
-                  <div><strong>Ticket:</strong> {t.ticketId}</div>
+                  <div><strong>Created By:</strong> {t.createdBy}</div>
+                  <div><strong>Created On:</strong> {formatDate(t.createdDate)} {formatTime(t.createdTime)}</div>
                   <div><strong>Zone:</strong> {t.zoneNo}</div>
-                  <ExpandableText text={remarksMain} maxLength={70} />
-                  {updatedRemarks && <ExpandableText text={updatedRemarks} maxLength={70} />}
-                  <LastUpdated date={t.lastUpdated || t.updatedAt || t.createdAt} />
+                  <div><strong>Apartment:</strong> {t.apartmentName}</div>
+                  <div><strong>Room:</strong> {t.roomNo}</div>
+                  <div className="remarks-wrapper" style={{ marginTop: 6 }}>
+                    <strong>Remarks:</strong> <ExpandableText text={remarksMain} maxLength={70} />
+                  </div>
+                  {t.assignedTo && <div className="assigned-badge"><strong>Assigned To:</strong> {t.assignedTo}</div>}
+                  {updatedRemarks && <div className="updated-remarks"><strong>Updated Remarks:</strong> <ExpandableText text={updatedRemarks} maxLength={70} /></div>}
+                  <LastUpdated date={t.lastUpdated || t.updatedAt || t.createdDate || t.createdAt} />
                 </div>
               </div>
             );
@@ -200,14 +240,20 @@ const AllTickets = () => {
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="pagination">
-          <button disabled={currentPage === 1} onClick={() => goToPage(currentPage - 1)}>Prev</button>
-          {Array.from({ length: totalPages }, (_, i) => (
-            <button key={i} className={currentPage === i + 1 ? "active" : ""} onClick={() => goToPage(i + 1)}>
-              {i + 1}
+        <div className="pagination-wrapper">
+          <div className="pagination">
+            <button onClick={() => goToPage(currentPage - 1)} disabled={currentPage === 1}>
+              &lt; Prev
             </button>
-          ))}
-          <button disabled={currentPage === totalPages} onClick={() => goToPage(currentPage + 1)}>Next</button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((num) => (
+              <button key={num} className={num === currentPage ? "active" : ""} onClick={() => goToPage(num)}>
+                {num}
+              </button>
+            ))}
+            <button onClick={() => goToPage(currentPage + 1)} disabled={currentPage === totalPages}>
+              Next &gt;
+            </button>
+          </div>
         </div>
       )}
     </StaffLayout>
