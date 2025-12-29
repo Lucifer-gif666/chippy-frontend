@@ -9,6 +9,9 @@ import ExpandableText from "../components/ExpandableText";
 import LastUpdated from "../components/LastUpdated";
 import { showBrowserNotification } from "../utils/browserNotifications";
 
+// ✅ API base URL from env (NO localhost hardcode)
+const API_BASE_URL = import.meta.env.VITE_API_URL;
+
 const AssignTickets = () => {
   const [tickets, setTickets] = useState([]);
   const [staffList, setStaffList] = useState([]);
@@ -26,7 +29,10 @@ const AssignTickets = () => {
   const TICKETS_PER_PAGE = 12;
   const [page, setPage] = useState(1);
 
-  useEffect(() => setPage(1), [filterText, filterZone, filterPriority, filterStatus, filterDate, activeTab]);
+  useEffect(
+    () => setPage(1),
+    [filterText, filterZone, filterPriority, filterStatus, filterDate, activeTab]
+  );
 
   const ALLOWED_STATUS_NORMALS = new Set([
     "pending",
@@ -51,14 +57,16 @@ const AssignTickets = () => {
   // Fetch staff + tickets
   const fetchData = async () => {
     try {
-      const staffRes = await axios.get("http://localhost:5000/api/staff");
+      const staffRes = await axios.get(`${API_BASE_URL}/api/staff`);
       const staffData = staffRes.data;
       setStaffList(staffData);
 
-      const ticketsRes = await axios.get("http://localhost:5000/api/tickets");
+      const ticketsRes = await axios.get(`${API_BASE_URL}/api/tickets`);
       const ticketsWithStaffNames = ticketsRes.data.map((t) => {
         const assignedStaffId = t.assignedToId?._id || t.assignedToId;
-        const staff = staffData.find((s) => String(s._id) === String(assignedStaffId));
+        const staff = staffData.find(
+          (s) => String(s._id) === String(assignedStaffId)
+        );
         return {
           ...t,
           staffName: staff ? staff.name : "None",
@@ -90,15 +98,23 @@ const AssignTickets = () => {
     if (!ticket) return;
 
     try {
-      await axios.patch(`http://localhost:5000/api/tickets/assign/${ticketMongoId}`, {
-        staffId,
-        staffName: staff.name,
-      });
+      await axios.patch(
+        `${API_BASE_URL}/api/tickets/assign/${ticketMongoId}`,
+        {
+          staffId,
+          staffName: staff.name,
+        }
+      );
 
       setTickets((prev) =>
         prev.map((t) =>
           t._id === ticketMongoId
-            ? { ...t, assignedToId: staffId, staffName: staff.name, lastUpdated: new Date().toISOString() }
+            ? {
+                ...t,
+                assignedToId: staffId,
+                staffName: staff.name,
+                lastUpdated: new Date().toISOString(),
+              }
             : t
         )
       );
@@ -111,10 +127,9 @@ const AssignTickets = () => {
         `${currentStaff.name} assigned ticket ${ticket.ticketId} to ${staff.name}`
       );
 
-      // ✅ Switch to Manage Assignments tab after assigning
+      // Switch to Manage Assignments tab
       setActiveTab("assigned");
 
-      // Scroll to the newly assigned ticket
       setTimeout(() => {
         if (rowRefs.current[ticketMongoId]) {
           rowRefs.current[ticketMongoId].scrollIntoView({
@@ -140,11 +155,17 @@ const AssignTickets = () => {
         (t.zoneNo || "").toLowerCase().includes(filterText.toLowerCase());
 
       const zoneMatch = filterZone ? t.zoneNo === filterZone : true;
-      const priorityMatch = filterPriority ? t.priority === filterPriority.toLowerCase() : true;
-      const statusMatch = filterStatus ? normalizeStatus(t.status) === filterStatus : true;
+      const priorityMatch = filterPriority
+        ? t.priority === filterPriority.toLowerCase()
+        : true;
+      const statusMatch = filterStatus
+        ? normalizeStatus(t.status) === filterStatus
+        : true;
 
       const ticketDate = formatToDDMMYYYY(t.createdDate);
-      const calendarDate = filterDate ? filterDate.split("-").reverse().join("-") : "";
+      const calendarDate = filterDate
+        ? filterDate.split("-").reverse().join("-")
+        : "";
       const dateMatch = !filterDate || ticketDate === calendarDate;
 
       return textMatch && zoneMatch && priorityMatch && statusMatch && dateMatch;
@@ -159,8 +180,14 @@ const AssignTickets = () => {
     .sort((a, b) => new Date(b.createdDate) - new Date(a.createdDate));
 
   const zones = [...new Set(filteredTickets.map((t) => t.zoneNo).filter(Boolean))];
-  const priorities = [...new Set(filteredTickets.map((t) => t.priority).filter(Boolean))];
-  const statuses = [...new Set(filteredTickets.map((t) => normalizeStatus(t.status)).filter(Boolean))];
+  const priorities = [
+    ...new Set(filteredTickets.map((t) => t.priority).filter(Boolean)),
+  ];
+  const statuses = [
+    ...new Set(
+      filteredTickets.map((t) => normalizeStatus(t.status)).filter(Boolean)
+    ),
+  ];
 
   const totalPages = Math.ceil(filteredTickets.length / TICKETS_PER_PAGE);
   const paginatedTickets = filteredTickets.slice(
@@ -168,7 +195,11 @@ const AssignTickets = () => {
     page * TICKETS_PER_PAGE
   );
 
-  const unassignedCount = tickets.filter((t) => ALLOWED_STATUS_NORMALS.has(normalizeStatus(t.status)) && !t.assignedToId).length;
+  const unassignedCount = tickets.filter(
+    (t) =>
+      ALLOWED_STATUS_NORMALS.has(normalizeStatus(t.status)) &&
+      !t.assignedToId
+  ).length;
 
   return (
     <StaffLayout>
@@ -200,17 +231,29 @@ const AssignTickets = () => {
 
         <select value={filterZone} onChange={(e) => setFilterZone(e.target.value)}>
           <option value="">All Zones</option>
-          {zones.map((z) => (<option key={z} value={z}>{z}</option>))}
+          {zones.map((z) => (
+            <option key={z} value={z}>{z}</option>
+          ))}
         </select>
 
-        <select value={filterPriority} onChange={(e) => setFilterPriority(e.target.value)}>
+        <select
+          value={filterPriority}
+          onChange={(e) => setFilterPriority(e.target.value)}
+        >
           <option value="">All Priorities</option>
-          {priorities.map((p) => (<option key={p} value={p}>{p}</option>))}
+          {priorities.map((p) => (
+            <option key={p} value={p}>{p}</option>
+          ))}
         </select>
 
-        <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
+        <select
+          value={filterStatus}
+          onChange={(e) => setFilterStatus(e.target.value)}
+        >
           <option value="">All Status</option>
-          {statuses.map((s) => (<option key={s} value={s}>{s.replace("-", " ")}</option>))}
+          {statuses.map((s) => (
+            <option key={s} value={s}>{s.replace("-", " ")}</option>
+          ))}
         </select>
 
         <input
@@ -219,9 +262,16 @@ const AssignTickets = () => {
           onChange={(e) => setFilterDate(e.target.value)}
         />
 
-        <button className="reset-btn" onClick={() => {
-          setFilterText(""); setFilterZone(""); setFilterPriority(""); setFilterStatus(""); setFilterDate("");
-        }}>
+        <button
+          className="reset-btn"
+          onClick={() => {
+            setFilterText("");
+            setFilterZone("");
+            setFilterPriority("");
+            setFilterStatus("");
+            setFilterDate("");
+          }}
+        >
           Reset Filters
         </button>
       </div>
@@ -235,20 +285,26 @@ const AssignTickets = () => {
             <div
               key={t._id}
               ref={(el) => (rowRefs.current[t._id] = el)}
-              className={`ticket-card ${highlightTicket === t._id ? "new-ticket-highlight" : ""}`}
+              className={`ticket-card ${
+                highlightTicket === t._id ? "new-ticket-highlight" : ""
+              }`}
             >
               {t.assignedToId && <div className="assigned-ribbon">ASSIGNED</div>}
 
-             <div className="card-header">
-  <div className="header-top">
-    <span className={`badge status-${t.status}`}>{normalizeStatus(t.status)}</span>
-    <span className={`badge ${t.priority || "low"}`}>{t.priority}</span>
-  </div>
-  <div className="header-bottom">
-    <span className="ticket-icon">🎫</span>
-    <span className="ticket-id">{t.ticketId}</span>
-  </div>
-</div>
+              <div className="card-header">
+                <div className="header-top">
+                  <span className={`badge status-${t.status}`}>
+                    {normalizeStatus(t.status)}
+                  </span>
+                  <span className={`badge ${t.priority || "low"}`}>
+                    {t.priority}
+                  </span>
+                </div>
+                <div className="header-bottom">
+                  <span className="ticket-icon">🎫</span>
+                  <span className="ticket-id">{t.ticketId}</span>
+                </div>
+              </div>
 
               <div className="card-body">
                 <div><strong>Created By:</strong> {t.createdBy}</div>
@@ -265,7 +321,9 @@ const AssignTickets = () => {
                   <ExpandableText text={t.remarks || "No remarks"} maxLength={80} />
                 </div>
 
-                <div className="assigned-badge"><strong>Assigned To:</strong> {t.staffName || "None"}</div>
+                <div className="assigned-badge">
+                  <strong>Assigned To:</strong> {t.staffName || "None"}
+                </div>
 
                 <div className="assign-section">
                   <select
@@ -282,11 +340,22 @@ const AssignTickets = () => {
                     </option>
                     {staffList
                       .filter((s) => String(s._id) !== String(t.assignedToId))
-                      .map((s) => (<option key={s._id} value={s._id}>{s.name}</option>))}
+                      .map((s) => (
+                        <option key={s._id} value={s._id}>
+                          {s.name}
+                        </option>
+                      ))}
                   </select>
                 </div>
 
-                <LastUpdated date={t.lastUpdated || t.updatedAt || t.createdDate || t.createdAt} />
+                <LastUpdated
+                  date={
+                    t.lastUpdated ||
+                    t.updatedAt ||
+                    t.createdDate ||
+                    t.createdAt
+                  }
+                />
               </div>
             </div>
           ))
@@ -296,17 +365,26 @@ const AssignTickets = () => {
       {/* Pagination */}
       {totalPages > 1 && (
         <div className="pagination">
-          <button onClick={() => setPage(page - 1)} disabled={page === 1}>&lt; Prev</button>
+          <button onClick={() => setPage(page - 1)} disabled={page === 1}>
+            &lt; Prev
+          </button>
           {[...Array(totalPages)].map((_, i) => (
             <button
               key={i}
-              className={`pagination-page-btn ${page === i + 1 ? "active" : ""}`}
+              className={`pagination-page-btn ${
+                page === i + 1 ? "active" : ""
+              }`}
               onClick={() => setPage(i + 1)}
             >
               {i + 1}
             </button>
           ))}
-          <button onClick={() => setPage(page + 1)} disabled={page === totalPages}>Next &gt;</button>
+          <button
+            onClick={() => setPage(page + 1)}
+            disabled={page === totalPages}
+          >
+            Next &gt;
+          </button>
         </div>
       )}
     </StaffLayout>
