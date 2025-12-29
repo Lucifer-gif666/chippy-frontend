@@ -6,6 +6,9 @@ import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import ChippyLogo from "../assets/image-removebg-preview.png";
 import BgImage from "../assets/868ae689-5098-45a2-a634-ec7b996cf467.jpg";
 
+
+// ✅ API base URL from env (NO localhost hardcode)
+const API_BASE_URL = import.meta.env.VITE_API_URL; 
 const SetPassword = () => {
   const navigate = useNavigate();
   const [password, setPassword] = useState("");

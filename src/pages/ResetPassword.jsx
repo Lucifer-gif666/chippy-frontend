@@ -2,6 +2,10 @@ import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 
+
+// ✅ API base URL from env (NO localhost hardcode)
+const API_BASE_URL = import.meta.env.VITE_API_URL;
+
 const ResetPassword = () => {
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");

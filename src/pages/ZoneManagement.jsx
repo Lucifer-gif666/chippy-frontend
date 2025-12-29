@@ -4,6 +4,10 @@ import axios from "axios";
 import StaffLayout from "../layout/StaffLayout";
 import "../styles/ZoneManagement.css";
 
+
+// ✅ API base URL from env (NO localhost hardcode)
+const API_BASE_URL = import.meta.env.VITE_API_URL;
+
 const ZoneManagement = () => {
   const [zones, setZones] = useState([]);
   const [expandedZone, setExpandedZone] = useState(null);
@@ -40,7 +44,7 @@ const ZoneManagement = () => {
     if (!branchName.trim()) return;
     try {
       const res = await axios.post(
-        `http://localhost:5000/api/zones/${zones[zoneIndex]._id}/branches`,
+        `${API_BASE_URL}/api/zones/${zones[zoneIndex]._id}/branches`,
         { branchName }
       );
       const updatedZones = [...zones];
@@ -56,7 +60,7 @@ const ZoneManagement = () => {
     if (!roomName.trim()) return;
     try {
       const res = await axios.post(
-        `http://localhost:5000/api/zones/${zones[zoneIndex]._id}/branches/${branchIndex}/rooms`,
+        `${API_BASE_URL}/api/zones/${zones[zoneIndex]._id}/branches/${branchIndex}/rooms`,
         { roomName }
       );
       const updatedZones = [...zones];

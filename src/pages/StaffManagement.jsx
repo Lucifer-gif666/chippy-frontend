@@ -3,6 +3,10 @@ import { toast } from "react-toastify";
 import StaffLayout from "../layout/StaffLayout";
 import "../styles/StaffManagement.css";
 
+
+// ✅ API base URL from env (NO localhost hardcode)
+const API_BASE_URL = import.meta.env.VITE_API_URL;
+
 const StaffManagement = () => {
   const [allStaff, setAllStaff] = useState([]);
   const [staffList, setStaffList] = useState([]);
@@ -181,7 +185,7 @@ const StaffManagement = () => {
       setIdLoading(id, true);
 
       const res = await fetch(
-        `http://localhost:5000/api/staff/update-role/${id}`,
+        `${API_BASE_URL}/api/staff/update-role/${id}`,
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
@@ -211,7 +215,7 @@ const StaffManagement = () => {
       setIdLoading(id, true);
 
       const res = await fetch(
-        `http://localhost:5000/api/staff/toggle-verified/${id}`,
+        `${API_BASE_URL}/api/staff/toggle-verified/${id}`,
         { method: "PATCH" }
       );
 
@@ -242,8 +246,8 @@ const StaffManagement = () => {
       setIdLoading(id, true);
 
       const urls = [
-        `http://localhost:5000/api/staff/${id}`,
-        `http://localhost:5000/api/staff/delete/${id}`,
+        `${API_BASE_URL}/api/staff/${id}`,
+        `${API_BASE_URL}/api/staff/delete/${id}`,
       ];
 
       let res, data;

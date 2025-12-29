@@ -10,6 +10,12 @@ import "react-toastify/dist/ReactToastify.css";
 import ClosedTicketWrapper from "../ReusableComp/ClosedTicketWrapper";
 import { showBrowserNotification } from "../utils/browserNotifications";
 
+
+
+// ✅ API base URL from env (NO localhost hardcode)
+const API_BASE_URL = import.meta.env.VITE_API_URL;
+
+
 const TicketHistory = () => {
   const rawStaff = localStorage.getItem("currentStaff");
   const currentStaff = rawStaff ? JSON.parse(rawStaff) : null;
@@ -130,7 +136,7 @@ const TicketHistory = () => {
 
     try {
       const ticket = tickets.find((t) => extractId(t._id) === ticketId);
-      await axios.patch(`http://localhost:5000/api/tickets/close/${ticketId}`);
+      await axios.patch(`${API_BASE_URL}/api/tickets/close/${ticketId}`);
 
       showBrowserNotification(
         "Ticket Closed",

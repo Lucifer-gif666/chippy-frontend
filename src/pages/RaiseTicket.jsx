@@ -10,6 +10,10 @@ import "../styles/RaiseTicket.css";
 // ✅ Import browser notification helper
 import { showBrowserNotification } from "../utils/browserNotifications";
 
+
+// ✅ API base URL from env (NO localhost hardcode)
+const API_BASE_URL = import.meta.env.VITE_API_URL;
+
 const RaiseTicket = ({ handleNotificationRead }) => {
   const [zones, setZones] = useState([]);
   const [branches, setBranches] = useState([]);

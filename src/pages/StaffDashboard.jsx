@@ -12,6 +12,10 @@ import ClosedTicketWrapper from "../ReusableComp/ClosedTicketWrapper";
 // ✅ Import notification permission helper
 import { requestNotificationPermission } from "../utils/notifications";
 
+
+// ✅ API base URL from env (NO localhost hardcode)
+const API_BASE_URL = import.meta.env.VITE_API_URL;
+
 const StaffDashboard = ({ user }) => {
   const [tickets, setTickets] = useState([]);
   const [highlightTicket, setHighlightTicket] = useState(null);
