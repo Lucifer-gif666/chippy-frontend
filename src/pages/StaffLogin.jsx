@@ -9,7 +9,11 @@ import BgImage from "../assets/868ae689-5098-45a2-a634-ec7b996cf467.jpg";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 
 // ✅ API base URL from ENV
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const API_BASE_URL = import.meta.env.VITE_API_URL;
+if (!API_BASE_URL) {
+  console.error("❌ VITE_API_URL is missing");
+}
+
 
 const StaffLogin = () => {
   const navigate = useNavigate();
