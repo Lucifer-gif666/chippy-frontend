@@ -41,7 +41,7 @@ const SetPassword = () => {
     }
 
     try {
-      const res = await axios.post("http://localhost:5000/api/auth/set-password", {
+      const res = await axios.post(`${API_BASE_URL}/api/auth/set-password`, {
         email: user.email,
         password,
       });

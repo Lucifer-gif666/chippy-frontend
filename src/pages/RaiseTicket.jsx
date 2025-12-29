@@ -29,7 +29,7 @@ const RaiseTicket = ({ handleNotificationRead }) => {
   useEffect(() => {
     const fetchZones = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/zones");
+        const res = await axios.get(`${API_BASE_URL}/api/zones`);
         setZones(res.data);
       } catch (err) {
         console.error("Failed to fetch zones", err);
@@ -70,7 +70,7 @@ const RaiseTicket = ({ handleNotificationRead }) => {
     const selectedBranch = selectedZone?.branches[formData.branchIndex];
 
     // Generate Ticket ID
-    const lastTickets = await axios.get("http://localhost:5000/api/tickets");
+    const lastTickets = await axios.get(`${API_BASE_URL}/api/tickets`);
     const lastId = lastTickets.data.length
       ? lastTickets.data[0].ticketId.replace("TKT", "")
       : 0;
@@ -93,7 +93,7 @@ const RaiseTicket = ({ handleNotificationRead }) => {
     };
 
     try {
-      const res = await axios.post("http://localhost:5000/api/tickets", ticketData);
+      const res = await axios.post(`${API_BASE_URL}/api/tickets`, ticketData);
 
       // ✅ Show browser notification
       showBrowserNotification(

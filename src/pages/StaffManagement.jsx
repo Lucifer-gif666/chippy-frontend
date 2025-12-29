@@ -45,7 +45,7 @@ const StaffManagement = () => {
   const fetchStaff = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:5000/api/staff");
+      const res = await fetch(`${API_BASE_URL}/api/staff`);
       const data = await safeParse(res);
 
       if (Array.isArray(data)) {
@@ -67,7 +67,7 @@ const StaffManagement = () => {
   const fetchTickets = useCallback(async () => {
     setTicketsLoading(true);
     try {
-      const res = await fetch("http://localhost:5000/api/tickets");
+      const res = await fetch(`${API_BASE_URL}/api/tickets`);
       const data = await safeParse(res);
       if (Array.isArray(data)) {
         setAllTickets(data);
@@ -142,7 +142,7 @@ const StaffManagement = () => {
 
     try {
       setAdding(true);
-      const res = await fetch("http://localhost:5000/api/staff/add", {
+      const res = await fetch(`${API_BASE_URL}/api/staff/add`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newStaff),

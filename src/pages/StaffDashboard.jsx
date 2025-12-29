@@ -31,7 +31,7 @@ const StaffDashboard = ({ user }) => {
 
   const fetchTickets = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/tickets");
+      const res = await axios.get(`${API_BASE_URL}/api/tickets`);
       const selectedDate = currentDate.toISOString().split("T")[0];
       const filteredTickets = res.data.filter((t) =>
         t.createdDate?.startsWith(selectedDate)

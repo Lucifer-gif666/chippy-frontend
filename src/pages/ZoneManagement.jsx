@@ -16,7 +16,7 @@ const ZoneManagement = () => {
 
   const fetchZones = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/zones");
+      const res = await axios.get(`${API_BASE_URL}/api/zones`);
       setZones(res.data);
     } catch (err) {
       console.error("Failed to fetch zones:", err);
@@ -27,7 +27,7 @@ const ZoneManagement = () => {
   const handleAddZone = async () => {
     if (!newZoneName.trim()) return;
     try {
-      const res = await axios.post("http://localhost:5000/api/zones", { name: newZoneName });
+      const res = await axios.post(`${API_BASE_URL}/api/zones`, { name: newZoneName });
       setZones([...zones, res.data]);
       setNewZoneName("");
     } catch (err) {

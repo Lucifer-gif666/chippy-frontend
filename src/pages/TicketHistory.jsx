@@ -47,7 +47,7 @@ const TicketHistory = () => {
 
   const fetchTickets = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/tickets");
+      const res = await axios.get(`${API_BASE_URL}/api/tickets`);
       const normalized = Array.isArray(res.data)
         ? res.data.map((t) => ({
             ...t,
