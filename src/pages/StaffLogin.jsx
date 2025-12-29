@@ -7,7 +7,9 @@ import GoogleLogo from "../assets/icons8-google-logo-48.png";
 import ChippyLogo from "../assets/image-removebg-preview.png";
 import BgImage from "../assets/868ae689-5098-45a2-a634-ec7b996cf467.jpg";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
-import axios from "axios"; // ✅ ADDED (only import added)
+
+// ✅ API base URL from ENV
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const StaffLogin = () => {
   const navigate = useNavigate();
@@ -21,28 +23,29 @@ const StaffLogin = () => {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
 
-      // 🔁 fetch → axios (ONLY CHANGE)
-      const res = await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/auth/google-login`,
-        {
+      const res = await fetch(`${API_BASE_URL}/api/auth/google-login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
           email: user.email,
           name: user.displayName,
           googleId: user.uid,
-        }
-      );
+        }),
+      });
 
-      const data = res.data;
+      const data = await res.json();
 
       if (res.status === 403) {
         alert(data.message);
         return;
       }
 
-      if (res.status === 201 && data.message.includes("waiting")) {
+      if (res.status === 201 && data.message?.includes("waiting")) {
         alert(data.message);
         return;
       }
 
+      // ✅ Staff logged in via Google but needs password
       if (data.needsPassword) {
         localStorage.setItem("userId", data.user._id);
         localStorage.setItem("currentStaff", JSON.stringify(data.user));
@@ -50,13 +53,14 @@ const StaffLogin = () => {
         return;
       }
 
+      // ✅ Normal login flow
       if (res.status === 200 || res.status === 201) {
         localStorage.setItem("userId", data.user._id);
         localStorage.setItem("currentStaff", JSON.stringify(data.user));
         navigate("/staff-dashboard");
       }
     } catch (err) {
-      console.error(err);
+      console.error("Google login error:", err);
       alert("Google login failed. Try again.");
     }
   };
@@ -65,13 +69,13 @@ const StaffLogin = () => {
   const handleEmailSignIn = async (e) => {
     e.preventDefault();
     try {
-      // 🔁 fetch → axios (ONLY CHANGE)
-      const res = await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/auth/login`,
-        { email, password }
-      );
+      const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
 
-      const data = res.data;
+      const data = await res.json();
 
       if (res.status !== 200) {
         alert(data.message || "Login failed");
@@ -82,7 +86,7 @@ const StaffLogin = () => {
       localStorage.setItem("currentStaff", JSON.stringify(data.user));
       navigate("/staff-dashboard");
     } catch (err) {
-      console.error(err);
+      console.error("Email login error:", err);
       alert("Email login failed. Try again.");
     }
   };
@@ -98,7 +102,12 @@ const StaffLogin = () => {
         style={{ backgroundColor: "#F0EADC" }}
       >
         <div className="w-full max-w-sm bg-white p-6 min-[1500px]:p-8 rounded-3xl shadow-xl hover:shadow-2xl hover:scale-105 transform transition duration-300 border border-gray-300">
-          <img src={ChippyLogo} alt="Chippy Inn Logo" className="w-12 h-12 min-[1500px]:w-20 min-[1500px]:h-20 mx-auto mb-4 min-[1500px]:mb-6" />
+          <img
+            src={ChippyLogo}
+            alt="Chippy Inn Logo"
+            className="w-12 h-12 min-[1500px]:w-20 min-[1500px]:h-20 mx-auto mb-4 min-[1500px]:mb-6"
+          />
+
           <h2 className="text-lg min-[1500px]:text-2xl font-normal text-black mb-4 min-[1500px]:mb-6 text-center">
             Log in to your account
           </h2>
@@ -107,7 +116,11 @@ const StaffLogin = () => {
             onClick={handleGoogleSignIn}
             className="flex items-center justify-center w-full gap-2 min-[1500px]:gap-3 px-4 min-[1500px]:px-6 py-2 min-[1500px]:py-3 border border-gray-300 rounded-lg bg-[#FFB733] hover:bg-[#FFA500] text-black font-medium text-sm min-[1500px]:text-base hover:scale-105 transition transform mb-4"
           >
-            <img src={GoogleLogo} alt="Google logo" className="w-5 h-5 min-[1500px]:w-6 min-[1500px]:h-6" />
+            <img
+              src={GoogleLogo}
+              alt="Google logo"
+              className="w-5 h-5 min-[1500px]:w-6 min-[1500px]:h-6"
+            />
             <span>Sign in with Google</span>
           </button>
 
@@ -117,7 +130,7 @@ const StaffLogin = () => {
             <hr className="flex-1 border-gray-300" />
           </div>
 
-          <form onSubmit={handleEmailSignIn} className="flex flex-col gap-4 relative">
+          <form onSubmit={handleEmailSignIn} className="flex flex-col gap-4">
             <input
               type="email"
               placeholder="Email"
@@ -140,8 +153,22 @@ const StaffLogin = () => {
                 className="absolute right-3 top-3 cursor-pointer text-gray-600"
                 onClick={() => setShowPassword(!showPassword)}
               >
-                {showPassword ? <AiOutlineEyeInvisible size={20} /> : <AiOutlineEye size={20} />}
+                {showPassword ? (
+                  <AiOutlineEyeInvisible size={20} />
+                ) : (
+                  <AiOutlineEye size={20} />
+                )}
               </span>
+            </div>
+
+            <div className="text-right -mt-2 mb-1">
+              <button
+                type="button"
+                onClick={() => navigate("/forgot-password")}
+                className="text-sm text-blue-700 hover:underline"
+              >
+                Forgot Password?
+              </button>
             </div>
 
             <button
@@ -163,7 +190,25 @@ const StaffLogin = () => {
         style={{ backgroundImage: `url(${BgImage})` }}
       >
         <div className="absolute inset-0 bg-[#473C1A]/30 animate-pulse-slow"></div>
+        <div className="absolute bottom-13 left-10 text-white">
+          <h3 className="text-3xl font-bold mb-2">Welcome to Chippy Inn</h3>
+          <p className="max-w-xs">
+            Securely manage your tickets, staffs and zones.
+          </p>
+        </div>
       </div>
+
+      <style>
+        {`
+          @keyframes pulse-slow {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.15; }
+          }
+          .animate-pulse-slow {
+            animation: pulse-slow 4s ease-in-out infinite;
+          }
+        `}
+      </style>
     </div>
   );
 };
