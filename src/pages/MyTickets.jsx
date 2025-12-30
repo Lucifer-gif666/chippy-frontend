@@ -113,7 +113,7 @@ const MyTickets = () => {
       const matchesPriority = filterPriority ? t.priority === filterPriority : true;
       const matchesStatus = filterStatus ? normalizeStatus(t.status) === filterStatus : true;
       const formattedCalendarDate = filterDate ? new Date(filterDate).toISOString().slice(0,10) : "";
-      const matchesDate = !filterDate || new Date(t.createdDate).toISOString().slice(0,10) === formattedCalendarDate;
+      const matchesDate = !filterDate || new Date(t.createdAt).toISOString().slice(0,10) === formattedCalendarDate;
       return matchesText && matchesZone && matchesPriority && matchesStatus && matchesDate;
     });
   };
@@ -208,6 +208,24 @@ const handleHold = async (ticketId) => {
   }
 };
 
+const formatDate = (dateStr) => {
+  if (!dateStr) return "";
+  const date = new Date(dateStr);
+  const dd = String(date.getDate()).padStart(2, "0");
+  const mm = String(date.getMonth() + 1).padStart(2, "0");
+  const yyyy = date.getFullYear();
+  return `${dd}/${mm}/${yyyy}`;
+};
+
+const formatTime = (dateStr) => {
+  if (!dateStr) return "";
+  const date = new Date(dateStr);
+  return date.toLocaleTimeString("en-IN", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
+};
 
   return (
     <StaffLayout>
@@ -321,8 +339,7 @@ const handleHold = async (ticketId) => {
 
                     <div className="card-body">
                       <div><strong>Created By:</strong> {t.createdBy}</div>
-                      <div><strong>Created On:</strong> {formatToDDMMYYYY(t.createdDate)}</div>
-
+                      <div><strong>Created On:</strong> {formatDate(t.createdAt)} {formatTime(t.createdAt)}</div>
                       <div className="ticket-location">
                         <div><strong>Zone:</strong> {t.zoneNo}</div>
                         <div><strong>Apartment:</strong> {t.apartmentName}</div>
@@ -381,7 +398,10 @@ const handleHold = async (ticketId) => {
                           {isLoading ? "Accepting..." : "Accept"}
                         </button>
                       )}
-                      <LastUpdated date={t.lastUpdated || t.updatedAt || t.createdDate || t.createdAt} />
+                      <LastUpdated date={//t.lastUpdated || 
+                        t.updatedAt || 
+                        //t.createdAt || 
+                        t.createdAt} />
                     </div>
                   </div>
                 </ClosedTicketWrapper>

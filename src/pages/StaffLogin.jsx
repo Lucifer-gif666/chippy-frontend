@@ -85,7 +85,8 @@ const StaffLogin = () => {
         alert(data.message || "Login failed");
         return;
       }
-
+      console.log(data.user._id)
+      console.log(data)
       localStorage.setItem("userId", data.user._id);
       localStorage.setItem("currentStaff", JSON.stringify(data.user));
       navigate("/staff-dashboard");

@@ -48,14 +48,14 @@ const StaffLayout = ({ children }) => {
       setUnreadCount(unread);
 
       // Optional: show browser notification pop-up for latest unread
-      notifications
-        .filter((n) => !n.isRead)
-        .forEach((n) => {
-          if ("Notification" in window && Notification.permission === "granted") {
-            new Notification("Chippy Inn", { body: n.message });
-          }
-        });
-    } catch (err) {
+    //   notifications
+    //     .filter((n) => !n.isRead)
+    //     .forEach((n) => {
+    //       if ("Notification" in window && Notification.permission === "granted") {
+    //         new Notification("Chippy Inn", { body: n.message });
+    //       }
+    //     });
+     } catch (err) {
       console.error("Error fetching notifications:", err);
     }
   };

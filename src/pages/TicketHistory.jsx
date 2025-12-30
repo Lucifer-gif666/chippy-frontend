@@ -113,7 +113,7 @@ const TicketHistory = () => {
       const matchesZone = filterZone ? t.zoneNo === filterZone : true;
       const matchesPriority = filterPriority ? t.priority === filterPriority.toLowerCase() : true;
       const matchesStatus = filterStatus ? normalizeStatus(t.status) === filterStatus : true;
-      const matchesDate = filterDate ? t.createdDate?.startsWith(filterDate) : true;
+      const matchesDate = filterDate ? t.createdAt?.startsWith(filterDate) : true;
 
       return matchesText && matchesZone && matchesPriority && matchesStatus && matchesDate;
     });
@@ -154,6 +154,25 @@ const TicketHistory = () => {
     } finally {
       setLoadingTickets((prev) => ({ ...prev, [ticketId]: false }));
     }
+  };
+
+  const formatDate = (dateStr) => {
+    if (!dateStr) return "";
+    const date = new Date(dateStr);
+    const dd = String(date.getDate()).padStart(2, "0");
+    const mm = String(date.getMonth() + 1).padStart(2, "0");
+    const yyyy = date.getFullYear();
+    return `${dd}/${mm}/${yyyy}`;
+  };
+  
+  const formatTime = (dateStr) => {
+    if (!dateStr) return "";
+    const date = new Date(dateStr);
+    return date.toLocaleTimeString("en-IN", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
   };
 
   return (
@@ -271,8 +290,7 @@ const TicketHistory = () => {
 
                       <div className="card-body">
                         <div><strong>Created By:</strong> {t.createdBy}</div>
-                        <div><strong>Created On:</strong> {formatToDDMMYYYY(t.createdDate)}</div>
-
+                        <div><strong>Created On:</strong> {formatDate(t.createdAt)} {formatTime(t.createdAt)}</div>
                         <div className="ticket-location">
                           <div><strong>Zone:</strong> {t.zoneNo}</div>
                           <div><strong>Apartment:</strong> {t.apartmentName}</div>
@@ -292,7 +310,10 @@ const TicketHistory = () => {
                           <div className="updated-remarks"><strong>Updated Remarks:</strong> <ExpandableText text={updatedRemarks} maxLength={70} /></div>
                         )}
 
-                        <LastUpdated date={t.lastUpdated || t.updatedAt || t.createdDate || t.createdAt} />
+                        <LastUpdated date={//t.lastUpdated || 
+                          t.updatedAt || 
+                          //t.createdAt || 
+                          t.createdAt} />
                       </div>
                     </div>
                   </ClosedTicketWrapper>
@@ -319,7 +340,7 @@ const TicketHistory = () => {
 
                   <div className="card-body">
                     <div><strong>Created By:</strong> {t.createdBy}</div>
-                    <div><strong>Created On:</strong> {formatToDDMMYYYY(t.createdDate)}</div>
+                        <div><strong>Created On:</strong> {formatDate(t.createdAt)} {formatTime(t.createdAt)}</div>
 
                     <div className="ticket-location">
                       <div><strong>Zone:</strong> {t.zoneNo}</div>
@@ -346,7 +367,10 @@ const TicketHistory = () => {
                       </button>
                     )}
 
-                    <LastUpdated date={t.lastUpdated || t.updatedAt || t.createdDate || t.createdAt} />
+                    <LastUpdated date={//t.lastUpdated || 
+                      t.updatedAt || 
+                      //t.createdAt || 
+                      t.createdAt} />
                   </div>
                 </div>
               );

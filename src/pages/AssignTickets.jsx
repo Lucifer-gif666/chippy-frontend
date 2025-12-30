@@ -91,6 +91,7 @@ const AssignTickets = () => {
 
   const currentStaff = JSON.parse(localStorage.getItem("currentStaff"));
 
+  //console.log(currentStaff.name)
   const handleAssign = async (ticketMongoId, staffId) => {
     if (!staffId) return;
     const staff = staffList.find((s) => s._id === staffId);
@@ -103,6 +104,7 @@ const AssignTickets = () => {
         {
           staffId,
           staffName: staff.name,
+          assignedBy: currentStaff.name
         }
       );
 
@@ -119,12 +121,12 @@ const AssignTickets = () => {
         )
       );
 
-      toast.success(`Ticket ${ticket.ticketId} assigned to ${staff.name}`);
-      setHighlightTicket(ticketMongoId);
+       toast.success(`Ticket ${ticket.ticketId} assigned to ${staff.name}`);
+       setHighlightTicket(ticketMongoId);
 
       showBrowserNotification(
         "Ticket Assigned",
-        `${currentStaff.name} assigned ticket ${ticket.ticketId} to ${staff.name}`
+        `${currentStaff.name} assigned (CHECK) ticket ${ticket.ticketId} to ${staff.name}`
       );
 
       // Switch to Manage Assignments tab
@@ -162,7 +164,7 @@ const AssignTickets = () => {
         ? normalizeStatus(t.status) === filterStatus
         : true;
 
-      const ticketDate = formatToDDMMYYYY(t.createdDate);
+      const ticketDate = formatToDDMMYYYY(t.createdAt);
       const calendarDate = filterDate
         ? filterDate.split("-").reverse().join("-")
         : "";
@@ -177,7 +179,7 @@ const AssignTickets = () => {
       const isAssigned = Boolean(t.assignedToId);
       return activeTab === "unassigned" ? !isAssigned : isAssigned;
     })
-    .sort((a, b) => new Date(b.createdDate) - new Date(a.createdDate));
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
   const zones = [...new Set(filteredTickets.map((t) => t.zoneNo).filter(Boolean))];
   const priorities = [
@@ -308,7 +310,7 @@ const AssignTickets = () => {
 
               <div className="card-body">
                 <div><strong>Created By:</strong> {t.createdBy}</div>
-                <div><strong>Created On:</strong> {formatToDDMMYYYY(t.createdDate)}</div>
+                <div><strong>Created On:</strong> {formatToDDMMYYYY(t.createdAt)}</div>
 
                 <div className="ticket-location">
                   <div><strong>Zone:</strong> {t.zoneNo}</div>
@@ -350,9 +352,9 @@ const AssignTickets = () => {
 
                 <LastUpdated
                   date={
-                    t.lastUpdated ||
+                    //t.lastUpdated ||
                     t.updatedAt ||
-                    t.createdDate ||
+                    //t.createdAt ||
                     t.createdAt
                   }
                 />

@@ -38,7 +38,7 @@ const StaffDashboard = ({ user }) => {
       const res = await axios.get(`${API_BASE_URL}/api/tickets`);
       const selectedDate = currentDate.toISOString().split("T")[0];
       const filteredTickets = res.data.filter((t) =>
-        t.createdDate?.startsWith(selectedDate)
+        t.createdAt?.startsWith(selectedDate)
       );
       setTickets(filteredTickets);
     } catch (err) {
@@ -117,15 +117,16 @@ const StaffDashboard = ({ user }) => {
       return matchSearch && matchZone && matchStatus && matchPriority;
     });
 
-    const formatTime = (timeStr) => {
-      if (!timeStr) return "";
-      const date = new Date(`1970-01-01T${timeStr}`);
-      let hours = date.getHours();
-      const minutes = String(date.getMinutes()).padStart(2, "0");
-      const ampm = hours >= 12 ? "PM" : "AM";
-      hours = hours % 12 || 12;
-      return `${hours}:${minutes} ${ampm}`;
+    const formatTime = (dateStr) => {
+      if (!dateStr) return "";
+      const date = new Date(dateStr);
+      return date.toLocaleTimeString("en-IN", {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+      });
     };
+    
 
     return (
       <div className="ticket-card-wrapper">
@@ -246,7 +247,7 @@ const StaffDashboard = ({ user }) => {
                   <div className="card-body">
                     <div><strong>Created By:</strong> {t.createdBy}</div>
                     <div>
-                      <strong>Created On:</strong> {formatToDDMMYYYY(t.createdDate)} {formatTime(t.createdTime)}
+                      <strong>Created On:</strong> {formatToDDMMYYYY(t.createdAt)} {formatTime(t.createdTime)}
                     </div>
                     <div><strong>Zone:</strong> {t.zoneNo}</div>
                     <div><strong>Apartment:</strong> {t.apartmentName}</div>
@@ -269,7 +270,10 @@ const StaffDashboard = ({ user }) => {
                     )}
 
                     <LastUpdated
-                      date={t.lastUpdated || t.updatedAt || t.createdDate || t.createdAt}
+                      date={//t.lastUpdated || 
+                        t.updatedAt || 
+                        //t.createdAt || 
+                        t.createdAt}
                     />
                   </div>
                 </div>

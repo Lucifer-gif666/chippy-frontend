@@ -10,8 +10,6 @@ import "../styles/RaiseTicket.css";
 // ✅ Import browser notification helper
 import { showBrowserNotification } from "../utils/browserNotifications";
 
-
-// ✅ API base URL from env (NO localhost hardcode)
 const API_BASE_URL = import.meta.env.VITE_API_URL;
 
 const RaiseTicket = ({ handleNotificationRead }) => {
@@ -33,7 +31,8 @@ const RaiseTicket = ({ handleNotificationRead }) => {
   useEffect(() => {
     const fetchZones = async () => {
       try {
-        const res = await axios.get(`${API_BASE_URL}/api/zones`);
+        const res = await axios.get(`${API_BASE_URL}
+/api/zones`);
         setZones(res.data);
       } catch (err) {
         console.error("Failed to fetch zones", err);
@@ -74,7 +73,8 @@ const RaiseTicket = ({ handleNotificationRead }) => {
     const selectedBranch = selectedZone?.branches[formData.branchIndex];
 
     // Generate Ticket ID
-    const lastTickets = await axios.get(`${API_BASE_URL}/api/tickets`);
+    const lastTickets = await axios.get(`${API_BASE_URL}
+/api/tickets`);
     const lastId = lastTickets.data.length
       ? lastTickets.data[0].ticketId.replace("TKT", "")
       : 0;
@@ -92,12 +92,13 @@ const RaiseTicket = ({ handleNotificationRead }) => {
       remarks: formData.remarks,
       status: "Pending",
       createdDate: now.toISOString().split("T")[0],
-      createdTime: now.toTimeString().split(" ")[0],
-      lastUpdated: now.toLocaleString(),
+      createdTime: new Date().toISOString(),
+      lastUpdated: new Date().toISOString(),
     };
 
     try {
-      const res = await axios.post(`${API_BASE_URL}/api/tickets`, ticketData);
+      const res = await axios.post(`${API_BASE_URL}
+/api/tickets`, ticketData);
 
       // ✅ Show browser notification
       showBrowserNotification(

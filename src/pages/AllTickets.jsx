@@ -37,8 +37,8 @@ const AllTickets = () => {
         : [];
       const sorted = normalized.sort(
         (a, b) =>
-          new Date(`${b.createdDate}T${b.createdTime || "00:00"}`) -
-          new Date(`${a.createdDate}T${a.createdTime || "00:00"}`)
+          new Date(`${b.createdAt}T${b.createdTime || "00:00"}`) -
+          new Date(`${a.createdAt}T${a.createdTime || "00:00"}`)
       );
       setTickets(sorted);
     } catch (err) {
@@ -73,7 +73,7 @@ const AllTickets = () => {
     const matchesZone = filterZone ? t.zoneNo === filterZone : true;
     const matchesPriority = filterPriority ? t.priority === filterPriority.toLowerCase() : true;
     const matchesStatus = filterStatus ? normalizeStatus(t.status) === filterStatus : true;
-    const matchesDate = filterDate ? t.createdDate?.startsWith(filterDate) : true;
+    const matchesDate = filterDate ? t.createdAt?.startsWith(filterDate) : true;
     return matchesText && matchesZone && matchesPriority && matchesStatus && matchesDate;
   });
 
@@ -104,15 +104,16 @@ const AllTickets = () => {
     return `${dd}/${mm}/${yyyy}`;
   };
 
-  const formatTime = (timeStr) => {
-    if (!timeStr) return "";
-    const date = new Date(`1970-01-01T${timeStr}`);
-    let hours = date.getHours();
-    const minutes = String(date.getMinutes()).padStart(2, "0");
-    const ampm = hours >= 12 ? "PM" : "AM";
-    hours = hours % 12 || 12;
-    return `${hours}:${minutes} ${ampm}`;
+  const formatTime = (dateStr) => {
+    if (!dateStr) return "";
+    const date = new Date(dateStr);
+    return date.toLocaleTimeString("en-IN", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
   };
+  
 
   return (
     <StaffLayout>
@@ -189,7 +190,7 @@ const AllTickets = () => {
                     </div>
                     <div className="card-body">
                       <div><strong>Created By:</strong> {t.createdBy}</div>
-                      <div><strong>Created On:</strong> {formatDate(t.createdDate)} {formatTime(t.createdTime)}</div>
+                      <div><strong>Created On:</strong> {formatDate(t.createdAt)} {formatTime(t.createdAt)}</div>
                       <div><strong>Zone:</strong> {t.zoneNo}</div>
                       <div><strong>Apartment:</strong> {t.apartmentName}</div>
                       <div><strong>Room:</strong> {t.roomNo}</div>
@@ -198,7 +199,9 @@ const AllTickets = () => {
                       </div>
                       {t.assignedTo && <div className="assigned-badge"><strong>Assigned To:</strong> {t.assignedTo}</div>}
                       {updatedRemarks && <div className="updated-remarks"><strong>Updated Remarks:</strong> <ExpandableText text={updatedRemarks} maxLength={70} /></div>}
-                      <LastUpdated date={t.lastUpdated || t.updatedAt || t.createdDate || t.createdAt} />
+                      <LastUpdated date={//t.lastUpdated || 
+                      t.updatedAt //|| t.createdAt 
+                      || t.createdAt} />
                     </div>
                   </div>
                 </ClosedTicketWrapper>
@@ -221,7 +224,7 @@ const AllTickets = () => {
                 </div>
                 <div className="card-body">
                   <div><strong>Created By:</strong> {t.createdBy}</div>
-                  <div><strong>Created On:</strong> {formatDate(t.createdDate)} {formatTime(t.createdTime)}</div>
+                  <div><strong>Created On:</strong> {formatDate(t.createdAt)} {formatTime(t.createdTime)}</div>
                   <div><strong>Zone:</strong> {t.zoneNo}</div>
                   <div><strong>Apartment:</strong> {t.apartmentName}</div>
                   <div><strong>Room:</strong> {t.roomNo}</div>
@@ -230,7 +233,10 @@ const AllTickets = () => {
                   </div>
                   {t.assignedTo && <div className="assigned-badge"><strong>Assigned To:</strong> {t.assignedTo}</div>}
                   {updatedRemarks && <div className="updated-remarks"><strong>Updated Remarks:</strong> <ExpandableText text={updatedRemarks} maxLength={70} /></div>}
-                  <LastUpdated date={t.lastUpdated || t.updatedAt || t.createdDate || t.createdAt} />
+                  <LastUpdated date={//t.lastUpdated || 
+                    t.updatedAt || 
+                    //t.createdAt || 
+                    t.createdAt} />
                 </div>
               </div>
             );
