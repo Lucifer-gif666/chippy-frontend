@@ -30,20 +30,26 @@ const StaffLogin = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isSigningIn, setIsSigningIn] = useState(false);
 
-  // 🔁 Handle Google redirect result (MOBILE)
+  /**
+   * 🔁 HANDLE GOOGLE REDIRECT RESULT (MOBILE ONLY)
+   * ❗ DO NOT enable loader unless redirect REALLY happened
+   */
   useEffect(() => {
     const handleRedirectLogin = async () => {
       try {
-        setIsSigningIn(true);
         const result = await getRedirectResult(auth);
-        if (!result?.user) {
-          setIsSigningIn(false);
+
+        // 🚫 No redirect → normal page load → DO NOTHING
+        if (!result || !result.user) {
           return;
         }
+
+        // ✅ Redirect happened → now show loader
+        setIsSigningIn(true);
         await handleGoogleBackendLogin(result.user);
       } catch (err) {
         console.error("Google redirect error:", err);
-        alert("Google login failed. Try again.");
+        alert("Google login failed. Please try again.");
         setIsSigningIn(false);
       }
     };
@@ -51,55 +57,68 @@ const StaffLogin = () => {
     handleRedirectLogin();
   }, []);
 
-  // ⭐ Shared backend Google login logic
+  /**
+   * ⭐ BACKEND GOOGLE LOGIN (SHARED)
+   */
   const handleGoogleBackendLogin = async (user) => {
-    const res = await fetch(`${API_BASE_URL}/api/auth/google-login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        email: user.email,
-        name: user.displayName,
-        googleId: user.uid,
-      }),
-    });
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/auth/google-login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: user.email,
+          name: user.displayName,
+          googleId: user.uid,
+        }),
+      });
 
-    const data = await res.json();
+      const data = await res.json();
 
-    if (res.status === 403) {
-      alert(data.message);
+      if (res.status === 403) {
+        alert(data.message);
+        setIsSigningIn(false);
+        return;
+      }
+
+      if (res.status === 201 && data.message?.includes("waiting")) {
+        alert(data.message);
+        setIsSigningIn(false);
+        return;
+      }
+
+      if (data.needsPassword) {
+        localStorage.setItem("userId", data.user._id);
+        localStorage.setItem("currentStaff", JSON.stringify(data.user));
+        navigate("/set-password");
+        return;
+      }
+
+      if (res.status === 200 || res.status === 201) {
+        localStorage.setItem("userId", data.user._id);
+        localStorage.setItem("currentStaff", JSON.stringify(data.user));
+        navigate("/staff-dashboard");
+      }
+    } catch (err) {
+      console.error("Backend Google login error:", err);
+      alert("Login failed. Try again.");
       setIsSigningIn(false);
-      return;
-    }
-
-    if (res.status === 201 && data.message?.includes("waiting")) {
-      alert(data.message);
-      setIsSigningIn(false);
-      return;
-    }
-
-    if (data.needsPassword) {
-      localStorage.setItem("userId", data.user._id);
-      localStorage.setItem("currentStaff", JSON.stringify(data.user));
-      navigate("/set-password");
-      return;
-    }
-
-    if (res.status === 200 || res.status === 201) {
-      localStorage.setItem("userId", data.user._id);
-      localStorage.setItem("currentStaff", JSON.stringify(data.user));
-      navigate("/staff-dashboard");
     }
   };
 
-  // ⭐ Google Sign-In (Desktop + Mobile)
+  /**
+   * ⭐ GOOGLE SIGN-IN BUTTON HANDLER
+   */
   const handleGoogleSignIn = async () => {
     if (isSigningIn) return;
-    setIsSigningIn(true);
 
     try {
+      setIsSigningIn(true);
+
       if (isMobileDevice()) {
+        // 📱 Mobile → Redirect (loader will continue after redirect)
         await signInWithRedirect(auth, provider);
       } else {
+        // 💻 Desktop → Popup
         const result = await signInWithPopup(auth, provider);
         await handleGoogleBackendLogin(result.user);
       }
@@ -110,7 +129,9 @@ const StaffLogin = () => {
     }
   };
 
-  // ⭐ Email Login
+  /**
+   * ⭐ EMAIL LOGIN (UNCHANGED)
+   */
   const handleEmailSignIn = async (e) => {
     e.preventDefault();
     try {
@@ -148,12 +169,14 @@ const StaffLogin = () => {
       >
         <div className="relative w-full max-w-sm bg-white p-6 min-[1500px]:p-8 rounded-3xl shadow-xl border border-gray-300">
 
-          {/* 🔒 Overlay while signing in */}
+          {/* 🔒 Overlay ONLY when actually signing in */}
           {isSigningIn && (
             <div className="absolute inset-0 bg-[#F0EADC]/80 backdrop-blur-sm rounded-3xl z-20 flex items-center justify-center">
               <div className="flex flex-col items-center gap-3 text-[#473C1A]">
                 <span className="w-10 h-10 border-4 border-[#473C1A]/30 border-t-[#473C1A] rounded-full animate-spin"></span>
-                <p className="text-sm tracking-wide">Signing you in securely…</p>
+                <p className="text-sm tracking-wide">
+                  Signing you in securely…
+                </p>
               </div>
             </div>
           )}
@@ -168,7 +191,7 @@ const StaffLogin = () => {
             Log in to your account
           </h2>
 
-          {/* 🌟 Google Button */}
+          {/* 🌟 GOOGLE BUTTON */}
           <button
             onClick={handleGoogleSignIn}
             disabled={isSigningIn}
