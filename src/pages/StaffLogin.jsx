@@ -1,8 +1,12 @@
 // src/pages/StaffLogin.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { auth, provider } from "../firebase";
-import { signInWithPopup } from "firebase/auth";
+import {
+  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
+} from "firebase/auth";
 import GoogleLogo from "../assets/icons8-google-logo-48.png";
 import ChippyLogo from "../assets/image-removebg-preview.png";
 import BgImage from "../assets/868ae689-5098-45a2-a634-ec7b996cf467.jpg";
@@ -14,62 +18,99 @@ if (!API_BASE_URL) {
   console.error("❌ VITE_API_URL is missing");
 }
 
+// 📱 Mobile detection
+const isMobileDevice = () =>
+  /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
 const StaffLogin = () => {
   const navigate = useNavigate();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [isSigningIn, setIsSigningIn] = useState(false);
 
-  // ⭐ Handle Google Sign-In
+  // 🔁 Handle Google redirect result (MOBILE)
+  useEffect(() => {
+    const handleRedirectLogin = async () => {
+      try {
+        setIsSigningIn(true);
+        const result = await getRedirectResult(auth);
+        if (!result?.user) {
+          setIsSigningIn(false);
+          return;
+        }
+        await handleGoogleBackendLogin(result.user);
+      } catch (err) {
+        console.error("Google redirect error:", err);
+        alert("Google login failed. Try again.");
+        setIsSigningIn(false);
+      }
+    };
+
+    handleRedirectLogin();
+  }, []);
+
+  // ⭐ Shared backend Google login logic
+  const handleGoogleBackendLogin = async (user) => {
+    const res = await fetch(`${API_BASE_URL}/api/auth/google-login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: user.email,
+        name: user.displayName,
+        googleId: user.uid,
+      }),
+    });
+
+    const data = await res.json();
+
+    if (res.status === 403) {
+      alert(data.message);
+      setIsSigningIn(false);
+      return;
+    }
+
+    if (res.status === 201 && data.message?.includes("waiting")) {
+      alert(data.message);
+      setIsSigningIn(false);
+      return;
+    }
+
+    if (data.needsPassword) {
+      localStorage.setItem("userId", data.user._id);
+      localStorage.setItem("currentStaff", JSON.stringify(data.user));
+      navigate("/set-password");
+      return;
+    }
+
+    if (res.status === 200 || res.status === 201) {
+      localStorage.setItem("userId", data.user._id);
+      localStorage.setItem("currentStaff", JSON.stringify(data.user));
+      navigate("/staff-dashboard");
+    }
+  };
+
+  // ⭐ Google Sign-In (Desktop + Mobile)
   const handleGoogleSignIn = async () => {
+    if (isSigningIn) return;
+    setIsSigningIn(true);
+
     try {
-      const result = await signInWithPopup(auth, provider);
-      const user = result.user;
-
-      const res = await fetch(`${API_BASE_URL}/api/auth/google-login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: user.email,
-          name: user.displayName,
-          googleId: user.uid,
-        }),
-      });
-
-      const data = await res.json();
-
-      if (res.status === 403) {
-        alert(data.message);
-        return;
-      }
-
-      if (res.status === 201 && data.message?.includes("waiting")) {
-        alert(data.message);
-        return;
-      }
-
-      // ✅ Staff logged in via Google but needs password
-      if (data.needsPassword) {
-        localStorage.setItem("userId", data.user._id);
-        localStorage.setItem("currentStaff", JSON.stringify(data.user));
-        navigate("/set-password");
-        return;
-      }
-
-      // ✅ Normal login flow
-      if (res.status === 200 || res.status === 201) {
-        localStorage.setItem("userId", data.user._id);
-        localStorage.setItem("currentStaff", JSON.stringify(data.user));
-        navigate("/staff-dashboard");
+      if (isMobileDevice()) {
+        await signInWithRedirect(auth, provider);
+      } else {
+        const result = await signInWithPopup(auth, provider);
+        await handleGoogleBackendLogin(result.user);
       }
     } catch (err) {
       console.error("Google login error:", err);
       alert("Google login failed. Try again.");
+      setIsSigningIn(false);
     }
   };
 
-  // ⭐ Handle Email Login
+  // ⭐ Email Login
   const handleEmailSignIn = async (e) => {
     e.preventDefault();
     try {
@@ -85,8 +126,7 @@ const StaffLogin = () => {
         alert(data.message || "Login failed");
         return;
       }
-      console.log(data.user._id)
-      console.log(data)
+
       localStorage.setItem("userId", data.user._id);
       localStorage.setItem("currentStaff", JSON.stringify(data.user));
       navigate("/staff-dashboard");
@@ -106,7 +146,18 @@ const StaffLogin = () => {
         className="flex md:flex-[0_0_30%] flex-1 items-center justify-center p-8 z-10"
         style={{ backgroundColor: "#F0EADC" }}
       >
-        <div className="w-full max-w-sm bg-white p-6 min-[1500px]:p-8 rounded-3xl shadow-xl hover:shadow-2xl hover:scale-105 transform transition duration-300 border border-gray-300">
+        <div className="relative w-full max-w-sm bg-white p-6 min-[1500px]:p-8 rounded-3xl shadow-xl border border-gray-300">
+
+          {/* 🔒 Overlay while signing in */}
+          {isSigningIn && (
+            <div className="absolute inset-0 bg-[#F0EADC]/80 backdrop-blur-sm rounded-3xl z-20 flex items-center justify-center">
+              <div className="flex flex-col items-center gap-3 text-[#473C1A]">
+                <span className="w-10 h-10 border-4 border-[#473C1A]/30 border-t-[#473C1A] rounded-full animate-spin"></span>
+                <p className="text-sm tracking-wide">Signing you in securely…</p>
+              </div>
+            </div>
+          )}
+
           <img
             src={ChippyLogo}
             alt="Chippy Inn Logo"
@@ -117,21 +168,34 @@ const StaffLogin = () => {
             Log in to your account
           </h2>
 
+          {/* 🌟 Google Button */}
           <button
             onClick={handleGoogleSignIn}
-            className="flex items-center justify-center w-full gap-2 min-[1500px]:gap-3 px-4 min-[1500px]:px-6 py-2 min-[1500px]:py-3 border border-gray-300 rounded-lg bg-[#FFB733] hover:bg-[#FFA500] text-black font-medium text-sm min-[1500px]:text-base hover:scale-105 transition transform mb-4"
+            disabled={isSigningIn}
+            className={`relative flex items-center justify-center w-full gap-3 px-6 py-3 rounded-xl font-medium transition-all duration-300 mb-4
+              ${
+                isSigningIn
+                  ? "bg-[#E8D7A1] cursor-not-allowed"
+                  : "bg-gradient-to-r from-[#FFB733] to-[#FFA500] hover:shadow-xl hover:scale-[1.03]"
+              }
+            `}
           >
-            <img
-              src={GoogleLogo}
-              alt="Google logo"
-              className="w-5 h-5 min-[1500px]:w-6 min-[1500px]:h-6"
-            />
-            <span>Sign in with Google</span>
+            {!isSigningIn && (
+              <>
+                <img src={GoogleLogo} alt="Google" className="w-5 h-5" />
+                <span className="tracking-wide text-black">
+                  Continue with Google
+                </span>
+              </>
+            )}
+            {isSigningIn && (
+              <span className="tracking-wide text-black">Signing in…</span>
+            )}
           </button>
 
           <div className="flex items-center gap-2 my-4">
             <hr className="flex-1 border-gray-300" />
-            <span className="text-black text-xs min-[1500px]:text-sm">or</span>
+            <span className="text-black text-xs">or</span>
             <hr className="flex-1 border-gray-300" />
           </div>
 
@@ -141,7 +205,7 @@ const StaffLogin = () => {
               placeholder="Email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FFB733] text-black"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FFB733]"
               required
             />
 
@@ -151,18 +215,14 @@ const StaffLogin = () => {
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FFB733] text-black"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FFB733]"
                 required
               />
               <span
                 className="absolute right-3 top-3 cursor-pointer text-gray-600"
                 onClick={() => setShowPassword(!showPassword)}
               >
-                {showPassword ? (
-                  <AiOutlineEyeInvisible size={20} />
-                ) : (
-                  <AiOutlineEye size={20} />
-                )}
+                {showPassword ? <AiOutlineEyeInvisible /> : <AiOutlineEye />}
               </span>
             </div>
 
@@ -178,7 +238,7 @@ const StaffLogin = () => {
 
             <button
               type="submit"
-              className="w-full bg-[#FFB733] text-black py-3 rounded-lg font-medium hover:bg-[#FFA500] hover:scale-105 transition transform"
+              className="w-full bg-[#FFB733] py-3 rounded-lg hover:bg-[#FFA500] transition"
             >
               Sign in
             </button>
@@ -195,19 +255,13 @@ const StaffLogin = () => {
         style={{ backgroundImage: `url(${BgImage})` }}
       >
         <div className="absolute inset-0 bg-[#473C1A]/30 animate-pulse-slow"></div>
-        <div className="absolute bottom-13 left-10 text-white">
-          <h3 className="text-3xl font-bold mb-2">Welcome to Chippy Inn</h3>
-          <p className="max-w-xs">
-            Securely manage your tickets, staffs and zones.
-          </p>
-        </div>
       </div>
 
       <style>
         {`
           @keyframes pulse-slow {
-            0%, 100% { opacity: 0.3; }
-            50% { opacity: 0.15; }
+            0%,100%{opacity:.3}
+            50%{opacity:.15}
           }
           .animate-pulse-slow {
             animation: pulse-slow 4s ease-in-out infinite;
