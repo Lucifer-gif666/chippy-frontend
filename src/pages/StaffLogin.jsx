@@ -30,21 +30,18 @@ const StaffLogin = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isSigningIn, setIsSigningIn] = useState(false);
 
-  /**
-   * 🔁 HANDLE GOOGLE REDIRECT RESULT (MOBILE ONLY)
-   * ❗ DO NOT enable loader unless redirect REALLY happened
-   */
+  /* ---------------------------------------------------
+     🔁 HANDLE REDIRECT RESULT (MOBILE RETURN)
+     IMPORTANT: loader is UI only, never controls logic
+     --------------------------------------------------- */
   useEffect(() => {
     const handleRedirectLogin = async () => {
       try {
         const result = await getRedirectResult(auth);
 
-        // 🚫 No redirect → normal page load → DO NOTHING
-        if (!result || !result.user) {
-          return;
-        }
+        // No redirect → normal load
+        if (!result || !result.user) return;
 
-        // ✅ Redirect happened → now show loader
         setIsSigningIn(true);
         await handleGoogleBackendLogin(result.user);
       } catch (err) {
@@ -57,9 +54,9 @@ const StaffLogin = () => {
     handleRedirectLogin();
   }, []);
 
-  /**
-   * ⭐ BACKEND GOOGLE LOGIN (SHARED)
-   */
+  /* ---------------------------------------------------
+     🔐 BACKEND GOOGLE LOGIN (SHARED)
+     --------------------------------------------------- */
   const handleGoogleBackendLogin = async (user) => {
     try {
       const res = await fetch(`${API_BASE_URL}/api/auth/google-login`, {
@@ -93,11 +90,9 @@ const StaffLogin = () => {
         return;
       }
 
-      if (res.status === 200 || res.status === 201) {
-        localStorage.setItem("userId", data.user._id);
-        localStorage.setItem("currentStaff", JSON.stringify(data.user));
-        navigate("/staff-dashboard");
-      }
+      localStorage.setItem("userId", data.user._id);
+      localStorage.setItem("currentStaff", JSON.stringify(data.user));
+      navigate("/staff-dashboard");
     } catch (err) {
       console.error("Backend Google login error:", err);
       alert("Login failed. Try again.");
@@ -105,9 +100,9 @@ const StaffLogin = () => {
     }
   };
 
-  /**
-   * ⭐ GOOGLE SIGN-IN BUTTON HANDLER
-   */
+  /* ---------------------------------------------------
+     🔑 GOOGLE SIGN-IN (DESKTOP + MOBILE)
+     --------------------------------------------------- */
   const handleGoogleSignIn = async () => {
     if (isSigningIn) return;
 
@@ -115,7 +110,7 @@ const StaffLogin = () => {
       setIsSigningIn(true);
 
       if (isMobileDevice()) {
-        // 📱 Mobile → Redirect (loader will continue after redirect)
+        // 📱 Mobile → Redirect
         await signInWithRedirect(auth, provider);
       } else {
         // 💻 Desktop → Popup
@@ -129,9 +124,9 @@ const StaffLogin = () => {
     }
   };
 
-  /**
-   * ⭐ EMAIL LOGIN (UNCHANGED)
-   */
+  /* ---------------------------------------------------
+     ✉ EMAIL LOGIN (UNCHANGED)
+     --------------------------------------------------- */
   const handleEmailSignIn = async (e) => {
     e.preventDefault();
     try {
@@ -169,7 +164,7 @@ const StaffLogin = () => {
       >
         <div className="relative w-full max-w-sm bg-white p-6 min-[1500px]:p-8 rounded-3xl shadow-xl border border-gray-300">
 
-          {/* 🔒 Overlay ONLY when actually signing in */}
+          {/* 🔒 Overlay (UI ONLY) */}
           {isSigningIn && (
             <div className="absolute inset-0 bg-[#F0EADC]/80 backdrop-blur-sm rounded-3xl z-20 flex items-center justify-center">
               <div className="flex flex-col items-center gap-3 text-[#473C1A]">
@@ -191,7 +186,7 @@ const StaffLogin = () => {
             Log in to your account
           </h2>
 
-          {/* 🌟 GOOGLE BUTTON */}
+          {/* 🌟 GOOGLE BUTTON — UNCHANGED */}
           <button
             onClick={handleGoogleSignIn}
             disabled={isSigningIn}
@@ -203,17 +198,10 @@ const StaffLogin = () => {
               }
             `}
           >
-            {!isSigningIn && (
-              <>
-                <img src={GoogleLogo} alt="Google" className="w-5 h-5" />
-                <span className="tracking-wide text-black">
-                  Continue with Google
-                </span>
-              </>
-            )}
-            {isSigningIn && (
-              <span className="tracking-wide text-black">Signing in…</span>
-            )}
+            <img src={GoogleLogo} alt="Google" className="w-5 h-5" />
+            <span className="tracking-wide text-black">
+              Continue with Google
+            </span>
           </button>
 
           <div className="flex items-center gap-2 my-4">
