@@ -126,7 +126,7 @@ const AssignTickets = () => {
 
       showBrowserNotification(
         "Ticket Assigned",
-        `${currentStaff.name} assigned (CHECK) ticket ${ticket.ticketId} to ${staff.name}`
+        `${currentStaff.name} assigned ticket ${ticket.ticketId} to ${staff.name}`
       );
 
       // Switch to Manage Assignments tab

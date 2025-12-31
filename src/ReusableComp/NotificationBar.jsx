@@ -1,10 +1,14 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import "../styles/NotificationBar.css";
 
 const NotificationBar = ({ isOpen, onClose, unreadCount, onMarkAsRead }) => {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [clearingAll, setClearingAll] = useState(false);
+  const [readingId, setReadingId] = useState(null);
+
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("currentStaff"));
@@ -23,10 +27,14 @@ const NotificationBar = ({ isOpen, onClose, unreadCount, onMarkAsRead }) => {
         onClose();
       }
     };
+
     if (isOpen) {
       document.addEventListener("mousedown", handleClickOutside);
     }
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
   }, [isOpen, onClose]);
 
   const fetchNotifications = async () => {
@@ -42,71 +50,100 @@ const NotificationBar = ({ isOpen, onClose, unreadCount, onMarkAsRead }) => {
   };
 
   const handleNotificationClick = async (notification) => {
-    // Mark as read first
     await markAsRead(notification._id);
-    // Navigate to the URL or ticket details
+
     if (notification.url) {
       navigate(notification.url);
     } else {
-      // Default to ticket details page
       navigate(`/ticket-details/${notification.ticketId}`);
     }
+
     onClose();
   };
 
   const markAsRead = async (notificationId) => {
     try {
+      setReadingId(notificationId);
+
       await axios.patch(`/api/notifications/${notificationId}/read`, {
         staffId: user._id,
       });
-      // Update local state
+
       setNotifications((prev) =>
         prev.filter((n) => n._id !== notificationId)
       );
-      // Notify parent to update unread count
+
       if (onMarkAsRead) onMarkAsRead();
     } catch (err) {
       console.error("Error marking notification as read:", err);
+    } finally {
+      setReadingId(null);
+    }
+  };
+
+  // Clear all (frontend loop – safe fallback)
+  const clearAllNotifications = async () => {
+    try {
+      setClearingAll(true);
+
+      for (const notification of notifications) {
+        await axios.patch(`/api/notifications/${notification._id}/read`, {
+          staffId: user._id,
+        });
+      }
+
+      setNotifications([]);
+      if (onMarkAsRead) onMarkAsRead("all");
+    } catch (err) {
+      console.error("Error clearing all notifications:", err);
+    } finally {
+      setClearingAll(false);
     }
   };
 
   if (!isOpen) return null;
 
   return (
-    <div
-      ref={dropdownRef}
-      className="absolute top-12 right-0 w-80 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto"
-    >
-      <div className="p-4 border-b border-gray-200">
-        <h3 className="text-lg font-semibold text-gray-800">
-          Notifications ({notifications.length})
-        </h3>
+    <div ref={dropdownRef} className="notification-dropdown">
+      {/* HEADER */}
+      <div className="notification-header">
+        <h3>Notifications ({notifications.length})</h3>
+
+        {notifications.length > 0 && (
+          <button
+            className="clear-all-btn"
+            onClick={clearAllNotifications}
+            disabled={clearingAll}
+          >
+            {clearingAll ? "Clearing..." : "Clear All"}
+          </button>
+        )}
       </div>
 
-      <div className="p-2">
+      {/* BODY */}
+      <div className="notification-body">
         {loading ? (
-          <div className="text-center py-4 text-gray-500">Loading...</div>
+          <div className="notification-state">Loading...</div>
         ) : notifications.length === 0 ? (
-          <div className="text-center py-4 text-gray-500">
-            No unread notifications
-          </div>
+          <div className="notification-state">No unread notifications</div>
         ) : (
           notifications.map((notification) => (
-            <div
-              key={notification._id}
-              className="p-3 mb-2 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors"
-            >
+            <div key={notification._id} className="notification-item">
               <div
-                className="text-sm text-gray-800 cursor-pointer mb-2"
+                className="notification-message"
                 onClick={() => handleNotificationClick(notification)}
               >
                 {notification.message}
               </div>
+
               <button
+                className="mark-read-btn"
                 onClick={() => markAsRead(notification._id)}
-                className="text-xs text-blue-600 hover:text-blue-800 underline"
+                disabled={readingId === notification._id}
               >
-                Mark as Read
+                {readingId === notification._id
+                  ? "Marking..."
+                  : "Mark as Read"}
               </button>
             </div>
           ))

@@ -41,7 +41,7 @@ const Header = ({ toggleSidebar, hamburgerRef, unreadCount = 0, onNotificationCl
   };
 
   return (
-    <header className="fixed top-0 left-0 w-full z-50 flex items-center justify-between px-4 py-3 bg-white/80 backdrop-blur-md shadow-md">
+    <header className="fixed top-0 left-0 w-full z-50 flex items-center justify-between px-4 py-3 bg-white/80 backdrop-blur-md shadow-md ">
       <div className="flex items-center gap-3">
         <button
           ref={hamburgerRef}
@@ -76,11 +76,11 @@ const Header = ({ toggleSidebar, hamburgerRef, unreadCount = 0, onNotificationCl
             type="button"
             onClick={handleNotificationClick}
             aria-label={`Notifications (${unread} unread)`}
-            className="relative cursor-pointer focus:outline-none"
+            className="relative cursor-pointer focus:outline-none "
           >
-            <FaBell size={22} className="text-gray-700" />
+            <FaBell size={22} className=" text-gray-700" />
             {unread > 0 && (
-              <span className="absolute -top-1 -right-2 bg-red-500 text-white text-xs font-bold rounded-full px-1 leading-4">
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full px-1 leading-4">
                 {unread > 99 ? "99+" : unread}
               </span>
             )}

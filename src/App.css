@@ -27,3 +27,10 @@ html, body, #root {
   width: 100%;
   overflow-x: hidden !important;
 }
+
+/* Bell button must be on top layer */
+header button {
+  position: relative;
+  z-index: 60;
+  overflow: visible !important;
+}
