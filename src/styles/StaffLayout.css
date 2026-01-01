@@ -89,3 +89,10 @@ footer {
     overflow-x: hidden;
   }
 }   
+@media (max-width: 480px) {
+  .sidebar .menu-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px; /* ✅ space between Dashboard, Raise Ticket, etc */
+  }
+}
