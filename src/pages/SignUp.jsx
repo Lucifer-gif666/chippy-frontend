@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL;
 
@@ -9,6 +10,8 @@ const SignUp = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
@@ -62,6 +65,7 @@ const SignUp = () => {
         )}
 
         <form onSubmit={handleSignup} className="flex flex-col gap-4">
+          {/* Email */}
           <input
             type="email"
             placeholder="Registered Email"
@@ -71,23 +75,51 @@ const SignUp = () => {
             required
           />
 
-          <input
-            type="password"
-            placeholder="New Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-4 py-3 border rounded-lg"
-            required
-          />
+          {/* Password */}
+          <div className="relative">
+            <input
+              type={showPassword ? "text" : "password"}
+              placeholder="New Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full px-4 py-3 border rounded-lg pr-10"
+              required
+            />
+            <span
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-3 cursor-pointer text-gray-600"
+            >
+              {showPassword ? (
+                <AiOutlineEyeInvisible size={20} />
+              ) : (
+                <AiOutlineEye size={20} />
+              )}
+            </span>
+          </div>
 
-          <input
-            type="password"
-            placeholder="Confirm Password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            className="w-full px-4 py-3 border rounded-lg"
-            required
-          />
+          {/* Confirm Password */}
+          <div className="relative">
+            <input
+              type={showConfirmPassword ? "text" : "password"}
+              placeholder="Confirm Password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className="w-full px-4 py-3 border rounded-lg pr-10"
+              required
+            />
+            <span
+              onClick={() =>
+                setShowConfirmPassword(!showConfirmPassword)
+              }
+              className="absolute right-3 top-3 cursor-pointer text-gray-600"
+            >
+              {showConfirmPassword ? (
+                <AiOutlineEyeInvisible size={20} />
+              ) : (
+                <AiOutlineEye size={20} />
+              )}
+            </span>
+          </div>
 
           <button
             type="submit"

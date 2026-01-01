@@ -183,8 +183,9 @@ const StaffLogin = () => {
           <button
             onClick={handleGoogleSignIn}
             disabled={isSigningIn}
-            className={`relative flex items-center justify-center w-full gap-3 px-6 py-3 rounded-xl font-medium transition-all duration-300 mb-4
-              ${
+            className={`hidden md:flex relative items-center justify-center w-full gap-3 px-6 py-3 rounded-xl font-medium transition-all duration-300 mb-4
+    ${
+
                 isSigningIn
                   ? "bg-[#E8D7A1] cursor-not-allowed"
                   : "bg-gradient-to-r from-[#FFB733] to-[#FFA500] hover:shadow-xl hover:scale-[1.03]"
@@ -199,7 +200,8 @@ const StaffLogin = () => {
 
           <div className="flex items-center gap-2 my-4">
             <hr className="flex-1 border-gray-300" />
-            <span className="text-black text-xs">or</span>
+            <span className="hidden md:inline text-black text-xs">or</span>
+
             <hr className="flex-1 border-gray-300" />
           </div>
 
