@@ -32,14 +32,11 @@ const StaffLogin = () => {
 
   /* ---------------------------------------------------
      🔁 HANDLE REDIRECT RESULT (MOBILE RETURN)
-     IMPORTANT: loader is UI only, never controls logic
      --------------------------------------------------- */
   useEffect(() => {
     const handleRedirectLogin = async () => {
       try {
         const result = await getRedirectResult(auth);
-
-        // No redirect → normal load
         if (!result || !result.user) return;
 
         setIsSigningIn(true);
@@ -55,7 +52,7 @@ const StaffLogin = () => {
   }, []);
 
   /* ---------------------------------------------------
-     🔐 BACKEND GOOGLE LOGIN (SHARED)
+     🔐 BACKEND GOOGLE LOGIN
      --------------------------------------------------- */
   const handleGoogleBackendLogin = async (user) => {
     try {
@@ -101,7 +98,7 @@ const StaffLogin = () => {
   };
 
   /* ---------------------------------------------------
-     🔑 GOOGLE SIGN-IN (DESKTOP + MOBILE)
+     🔑 GOOGLE SIGN-IN
      --------------------------------------------------- */
   const handleGoogleSignIn = async () => {
     if (isSigningIn) return;
@@ -110,10 +107,8 @@ const StaffLogin = () => {
       setIsSigningIn(true);
 
       if (isMobileDevice()) {
-        // 📱 Mobile → Redirect
         await signInWithRedirect(auth, provider);
       } else {
-        // 💻 Desktop → Popup
         const result = await signInWithPopup(auth, provider);
         await handleGoogleBackendLogin(result.user);
       }
@@ -125,7 +120,7 @@ const StaffLogin = () => {
   };
 
   /* ---------------------------------------------------
-     ✉ EMAIL LOGIN (UNCHANGED)
+     ✉ EMAIL LOGIN
      --------------------------------------------------- */
   const handleEmailSignIn = async (e) => {
     e.preventDefault();
@@ -164,7 +159,6 @@ const StaffLogin = () => {
       >
         <div className="relative w-full max-w-sm bg-white p-6 min-[1500px]:p-8 rounded-3xl shadow-xl border border-gray-300">
 
-          {/* 🔒 Overlay (UI ONLY) */}
           {isSigningIn && (
             <div className="absolute inset-0 bg-[#F0EADC]/80 backdrop-blur-sm rounded-3xl z-20 flex items-center justify-center">
               <div className="flex flex-col items-center gap-3 text-[#473C1A]">
@@ -186,7 +180,6 @@ const StaffLogin = () => {
             Log in to your account
           </h2>
 
-          {/* 🌟 GOOGLE BUTTON — UNCHANGED */}
           <button
             onClick={handleGoogleSignIn}
             disabled={isSigningIn}
@@ -253,6 +246,17 @@ const StaffLogin = () => {
             >
               Sign in
             </button>
+
+            {/* ✅ SIGN UP LINK (NEW) */}
+            <p className="text-center text-sm text-gray-700 mt-2">
+              Don&apos;t have an account?{" "}
+              <span
+                onClick={() => navigate("/signup")}
+                className="text-blue-700 font-medium cursor-pointer hover:underline"
+              >
+                Sign up
+              </span>
+            </p>
           </form>
 
           <p className="text-center text-black text-sm mt-6">

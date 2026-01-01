@@ -19,6 +19,7 @@ import TicketHistory from "./pages/TicketHistory";
 import ForgotPassword from "./pages/ForgetPassword";
 import ResetPassword from "./pages/ResetPassword";
 import SetPassword from "./pages/SetPassword";
+import SignUp from "./pages/SignUp";
 
 // ProtectedRoute and AdminRoute remain the same
 const ProtectedRoute = ({ children }) => {
@@ -40,6 +41,7 @@ const App = () => {
         {/* Public login pages */}
         <Route index element={<Login />} />
         <Route path="staff-login" element={<StaffLogin />} />
+        <Route path="signup" element={<SignUp/>}/>
 
         {/* ⭐ NEW Public Auth Routes */}
         <Route path="forgot-password" element={<ForgotPassword />} />
