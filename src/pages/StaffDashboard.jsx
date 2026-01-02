@@ -11,8 +11,7 @@ import ClosedTicketWrapper from "../ReusableComp/ClosedTicketWrapper";
 import { requestFCMToken, onForegroundMessage } from "../firebaseMessaging";
 
 
-// ✅ Import notification permission helper
-import { requestNotificationPermission } from "../utils/notifications";
+
 
 
 // ✅ API base URL from env (NO localhost hardcode)
@@ -70,7 +69,7 @@ const StaffDashboard = ({ user }) => {
   
 
   useEffect(() => {
-    if (user?.id) requestNotificationPermission(user.id);
+    if (user?.id) requestFCMToken(user.id);
   }, [user]);
 
   useEffect(() => {
