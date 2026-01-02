@@ -18,15 +18,13 @@ export const requestFCMToken = async () => {
 
     console.log("✅ FCM TOKEN:", token);
 
-    // 🔥 SEND TOKEN TO BACKEND (NOT Cloudflare Pages)
     const backendURL = import.meta.env.VITE_API_URL;
-
     if (!backendURL) {
-      console.error("❌ VITE_API_URL is missing");
+      console.error("❌ VITE_API_URL missing");
       return token;
     }
 
-    await fetch(`https://chippy-backend.onrender.com/api/save-fcm-token`, {
+    const res = await fetch(`${backendURL}/api/save-fcm-token`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -35,8 +33,12 @@ export const requestFCMToken = async () => {
       body: JSON.stringify({ token }),
     });
 
-    console.log("✅ FCM token saved to backend");
+    if (!res.ok) {
+      console.error("❌ Failed to save FCM token:", res.status);
+      return token;
+    }
 
+    console.log("✅ FCM token saved to backend");
     return token;
   } catch (err) {
     console.error("❌ FCM token error:", err);
@@ -44,6 +46,6 @@ export const requestFCMToken = async () => {
   }
 };
 
-// 🔔 Handle foreground notifications
+// 🔔 Foreground notification listener
 export const onForegroundMessage = (callback) =>
   onMessage(messaging, callback);
