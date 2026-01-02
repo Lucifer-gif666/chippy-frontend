@@ -12,7 +12,7 @@ export const requestFCMToken = async () => {
     }
 
     const token = await getToken(messaging, {
-      vapidKey: "PASTE_YOUR_PUBLIC_VAPID_KEY_HERE",
+      vapidKey: "BMXQtEru2rP04XBBef4aR3OIgCii02O5xnhL1s08W8iKFFxsQGEGdhGwT7GXZVdn63OHD3h0h9Sa70ujATCqiLg",
     });
 
     console.log("✅ FCM TOKEN:", token);
