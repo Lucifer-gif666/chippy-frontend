@@ -1,27 +1,18 @@
-import { initializeApp } from "firebase/app";
-import { getMessaging, getToken, onMessage } from "firebase/messaging";
+import { getToken, onMessage } from "firebase/messaging";
+import { messaging } from "./firebase"; // ✅ reuse initialized app
 
-const firebaseConfig = {
-  apiKey: "AIzaSyB0N22KvaDiRJuXq_bB-JWzNT2-L1eEm-M",
-  authDomain: "chippyinn-4d031.firebaseapp.com",
-  projectId: "chippyinn-4d031",
-  messagingSenderId: "64488962751",
-  appId: "1:64488962751:web:437264a36a27e4be93e40a"
-};
-
-const app = initializeApp(firebaseConfig);
-const messaging = getMessaging(app);
-
+// 🔔 Request permission + get FCM token
 export const requestFCMToken = async () => {
   try {
     const permission = await Notification.requestPermission();
+
     if (permission !== "granted") {
       console.warn("❌ Notification permission denied");
       return null;
     }
 
     const token = await getToken(messaging, {
-      vapidKey: "👉 YOUR_PUBLIC_VAPID_KEY 👈"
+      vapidKey: "PASTE_YOUR_PUBLIC_VAPID_KEY_HERE",
     });
 
     console.log("✅ FCM TOKEN:", token);
@@ -32,5 +23,6 @@ export const requestFCMToken = async () => {
   }
 };
 
+// 🔔 Handle foreground notifications
 export const onForegroundMessage = (callback) =>
   onMessage(messaging, callback);
