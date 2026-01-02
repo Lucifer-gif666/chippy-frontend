@@ -14,15 +14,26 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
-// Handle background notifications
+// Handle background notifications (ANDROID SAFE)
 messaging.onBackgroundMessage((payload) => {
-  const { title, body, url, notificationId } = payload.data;
+  console.log("[FCM] Background payload:", payload);
+
+  const title =
+    payload.notification?.title || "Chippy Inn";
+  const body =
+    payload.notification?.body || "New update";
+
+  const url = payload.data?.url || "/staff-dashboard";
+  const notificationId = payload.data?.notificationId;
 
   self.registration.showNotification(title, {
     body,
+    icon: "/icon-192.png",
+    badge: "/icon-192.png",
     data: { url, notificationId },
   });
 });
+
 
 // Handle notification click
 self.addEventListener('notificationclick', (event) => {
