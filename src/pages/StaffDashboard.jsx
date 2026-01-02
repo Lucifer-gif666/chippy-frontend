@@ -8,6 +8,8 @@ import { formatDate as formatGlobalDate } from "../utils/format";
 import ExpandableText from "../components/ExpandableText";
 import LastUpdated from "../components/LastUpdated";
 import ClosedTicketWrapper from "../ReusableComp/ClosedTicketWrapper";
+import { requestFCMToken, onForegroundMessage } from "../firebaseMessaging";
+
 
 // ✅ Import notification permission helper
 import { requestNotificationPermission } from "../utils/notifications";
@@ -45,6 +47,27 @@ const StaffDashboard = ({ user }) => {
       console.error(err);
     }
   };
+
+  useEffect(() => {
+    const initFCM = async () => {
+      const token = await requestFCMToken();
+  
+      if (token) {
+        await fetch("/api/save-fcm-token", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token }),
+        });
+      }
+    };
+  
+    initFCM();
+  
+    onForegroundMessage((payload) => {
+      console.log("📩 Foreground notification:", payload);
+    });
+  }, []);
+  
 
   useEffect(() => {
     if (user?.id) requestNotificationPermission(user.id);
