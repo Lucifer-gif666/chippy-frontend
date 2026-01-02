@@ -48,14 +48,27 @@ const StaffDashboard = ({ user }) => {
   };
 
   useEffect(() => {
-    if (!user) return;
+    const initFCM = async () => {
+      const jwtToken = localStorage.getItem("token");
   
-    requestFCMToken();
+      if (!jwtToken) {
+        console.warn("⚠️ No JWT found, skipping FCM");
+        return;
+      }
+  
+      const token = await requestFCMToken();
+  
+      if (token) {
+        console.log("📲 FCM token generated & sent to backend");
+      }
+    };
+  
+    initFCM();
   
     onForegroundMessage((payload) => {
       console.log("📩 Foreground notification:", payload);
     });
-  }, [user]);
+  }, []);
   
 
 

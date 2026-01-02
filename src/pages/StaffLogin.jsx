@@ -81,16 +81,19 @@ const StaffLogin = () => {
       }
 
       if (data.needsPassword) {
+        localStorage.setItem("token", data.token); // ⭐ ADD
         localStorage.setItem("userId", data.user._id);
         localStorage.setItem("currentStaff", JSON.stringify(data.user));
         navigate("/set-password");
         return;
       }
-
-      localStorage.setItem("token", data.token); // ⭐ ADD THIS
+      
+      // ✅ NORMAL GOOGLE LOGIN
+      localStorage.setItem("token", data.token); // ⭐ ADD
       localStorage.setItem("userId", data.user._id);
       localStorage.setItem("currentStaff", JSON.stringify(data.user));
       navigate("/staff-dashboard");
+      
       
     } catch (err) {
       console.error("Backend Google login error:", err);
