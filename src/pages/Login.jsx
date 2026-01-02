@@ -20,27 +20,27 @@ const Login = () => {
 
         <div className="space-y-4">
           {/* Staff login button */}
-          <div className="text-center">
+        <div className="text-center">
             <button
               onClick={() => navigate("/staff-login")}
               className="px-6 py-2 w-full bg-blue-600 text-white rounded transition transform hover:bg-blue-700 hover:scale-[1.02] active:scale-[0.98]"
             >
               Staff Login
             </button>
-          </div>
+          </div>   
 
-          {/* Guest login button */}
-          <div className="text-center">
+           {/* Guest login button */}
+        {/*}  <div className="text-center">
             <button
               onClick={() => navigate("/guest-login")}
               className="px-6 py-2 w-full bg-green-600 text-white rounded transition transform hover:bg-green-700 hover:scale-[1.02] active:scale-[0.98]"
             >
               Guest Login
             </button>
-          </div>
+          </div>   */}
         </div>
       </div>
-    </div>
+    </div>  
   );
 };
 

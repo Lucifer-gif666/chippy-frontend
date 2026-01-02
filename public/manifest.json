@@ -1,21 +1,20 @@
 {
-  "name": "Chippy Inn Ticketing System",
-  "short_name": "Chippy Inn",
-  "description": "Ticketing system for Chippy Inn",
+  "name": "Chippy Inn Ticketing",
+  "short_name": "Chippy",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#000000",
+  "background_color": "#F0EADC",
+  "theme_color": "#FFB733",
   "icons": [
     {
-      "src": "/vite.svg",
+      "src": "/image-removebg-preview.png",
       "sizes": "192x192",
-      "type": "image/svg+xml"
+      "type": "image/png"
     },
     {
-      "src": "/vite.svg",
+      "src": "/image-removebg-preview.png",
       "sizes": "512x512",
-      "type": "image/svg+xml"
+      "type": "image/png"
     }
   ]
 }
