@@ -24,7 +24,8 @@ export const requestFCMToken = async () => {
       return token;
     }
 
-    const res = await fetch(`${backendURL}/api/save-fcm-token`, {
+    const res = await fetch(`${backendURL}/api/auth/save-fcm-token`, {
+
       method: "POST",
       headers: {
         "Content-Type": "application/json",
