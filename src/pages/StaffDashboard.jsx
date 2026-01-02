@@ -48,29 +48,16 @@ const StaffDashboard = ({ user }) => {
   };
 
   useEffect(() => {
-    const initFCM = async () => {
-      const token = await requestFCMToken();
+    if (!user) return;
   
-      if (token) {
-        await fetch("/api/save-fcm-token", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ token }),
-        });
-      }
-    };
-  
-    initFCM();
+    requestFCMToken();
   
     onForegroundMessage((payload) => {
       console.log("📩 Foreground notification:", payload);
     });
-  }, []);
+  }, [user]);
   
 
-  useEffect(() => {
-    if (user?.id) requestFCMToken(user.id);
-  }, [user]);
 
   useEffect(() => {
     fetchTickets();
