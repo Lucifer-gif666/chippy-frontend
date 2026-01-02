@@ -87,9 +87,11 @@ const StaffLogin = () => {
         return;
       }
 
+      localStorage.setItem("token", data.token); // ⭐ ADD THIS
       localStorage.setItem("userId", data.user._id);
       localStorage.setItem("currentStaff", JSON.stringify(data.user));
       navigate("/staff-dashboard");
+      
     } catch (err) {
       console.error("Backend Google login error:", err);
       alert("Login failed. Try again.");
@@ -138,9 +140,10 @@ const StaffLogin = () => {
         return;
       }
 
+      localStorage.setItem("token", data.token); // ⭐ ADD THIS LINE
       localStorage.setItem("userId", data.user._id);
       localStorage.setItem("currentStaff", JSON.stringify(data.user));
-      navigate("/staff-dashboard");
+      navigate("/staff-dashboard");      
     } catch (err) {
       console.error("Email login error:", err);
       alert("Email login failed. Try again.");
