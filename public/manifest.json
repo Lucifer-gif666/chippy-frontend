@@ -1,6 +1,6 @@
 {
   "name": "Chippy Inn Ticketing",
-  "short_name": "Chippy",
+  "short_name": "Chippy Inn",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#F0EADC",
