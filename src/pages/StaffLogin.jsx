@@ -127,31 +127,41 @@ const StaffLogin = () => {
   /* ---------------------------------------------------
      ✉ EMAIL LOGIN
      --------------------------------------------------- */
-  const handleEmailSignIn = async (e) => {
-    e.preventDefault();
-    try {
-      const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await res.json();
-
-      if (res.status !== 200) {
-        alert(data.message || "Login failed");
-        return;
+     const handleEmailSignIn = async (e) => {
+      e.preventDefault();
+    
+      // 🔒 Prevent double submit
+      if (isSigningIn) return;
+    
+      setIsSigningIn(true);
+    
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        });
+    
+        const data = await res.json();
+    
+        if (res.status !== 200) {
+          alert(data.message || "Login failed");
+          setIsSigningIn(false);
+          return;
+        }
+    
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("userId", data.user._id);
+        localStorage.setItem("currentStaff", JSON.stringify(data.user));
+    
+        navigate("/staff-dashboard");
+      } catch (err) {
+        console.error("Email login error:", err);
+        alert("Email login failed. Try again.");
+        setIsSigningIn(false);
       }
-
-      localStorage.setItem("token", data.token); // ⭐ ADD THIS LINE
-      localStorage.setItem("userId", data.user._id);
-      localStorage.setItem("currentStaff", JSON.stringify(data.user));
-      navigate("/staff-dashboard");      
-    } catch (err) {
-      console.error("Email login error:", err);
-      alert("Email login failed. Try again.");
-    }
-  };
+    };
+    
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row relative overflow-hidden md:justify-center min-[1500px]:justify-start">
@@ -249,11 +259,19 @@ const StaffLogin = () => {
             </div>
 
             <button
-              type="submit"
-              className="w-full bg-[#FFB733] py-3 rounded-lg hover:bg-[#FFA500] transition"
-            >
-              Sign in
-            </button>
+  type="submit"
+  disabled={isSigningIn}
+  className={`w-full py-3 rounded-lg transition
+    ${
+      isSigningIn
+        ? "bg-[#E8D7A1] cursor-not-allowed"
+        : "bg-[#FFB733] hover:bg-[#FFA500]"
+    }
+  `}
+>
+  {isSigningIn ? "Signing in..." : "Sign in"}
+</button>
+
 
             {/* ✅ SIGN UP LINK (NEW) */}
             <p className="text-center text-sm text-gray-700 mt-2">
