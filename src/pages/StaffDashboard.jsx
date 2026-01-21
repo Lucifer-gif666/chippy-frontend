@@ -11,7 +11,7 @@ import ClosedTicketWrapper from "../ReusableComp/ClosedTicketWrapper";
 import { requestFCMToken, onForegroundMessage } from "../firebaseMessaging";
 
 
-
+axios.defaults.timeout = 15000;
 
 
 // ✅ API base URL from env (NO localhost hardcode)

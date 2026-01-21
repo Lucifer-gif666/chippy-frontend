@@ -6,8 +6,6 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import StaffLayout from "../layout/StaffLayout";
 import "../styles/RaiseTicket.css";
-
-// ✅ Import browser notification helper
 import { showBrowserNotification } from "../utils/browserNotifications";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL;
@@ -31,8 +29,7 @@ const RaiseTicket = ({ handleNotificationRead }) => {
   useEffect(() => {
     const fetchZones = async () => {
       try {
-        const res = await axios.get(`${API_BASE_URL}
-/api/zones`);
+        const res = await axios.get(`${API_BASE_URL}/api/zones`);
         setZones(res.data);
       } catch (err) {
         console.error("Failed to fetch zones", err);
@@ -41,21 +38,21 @@ const RaiseTicket = ({ handleNotificationRead }) => {
     fetchZones();
   }, []);
 
-  // Update branches when zone changes
+  // Update branches
   useEffect(() => {
     if (formData.zoneId) {
       const selectedZone = zones.find((z) => z._id === formData.zoneId);
       setBranches(selectedZone ? selectedZone.branches : []);
-      setFormData({ ...formData, branchIndex: "", roomNo: "" });
+      setFormData((prev) => ({ ...prev, branchIndex: "", roomNo: "" }));
       setRooms([]);
     }
   }, [formData.zoneId, zones]);
 
-  // Update rooms when branch changes
+  // Update rooms
   useEffect(() => {
     if (formData.branchIndex !== "" && branches.length > 0) {
       setRooms(branches[formData.branchIndex]?.rooms || []);
-      setFormData({ ...formData, roomNo: "" });
+      setFormData((prev) => ({ ...prev, roomNo: "" }));
     }
   }, [formData.branchIndex, branches]);
 
@@ -65,68 +62,85 @@ const RaiseTicket = ({ handleNotificationRead }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (!formData.remarks.trim()) {
-    toast.error("Remarks is required!");
-    return;
-  }
-    const selectedZone = zones.find((z) => z._id === formData.zoneId);
-    const selectedBranch = selectedZone?.branches[formData.branchIndex];
-
-    // Generate Ticket ID
-    const lastTickets = await axios.get(`${API_BASE_URL}
-/api/tickets`);
-    const lastId = lastTickets.data.length
-      ? lastTickets.data[0].ticketId.replace("TKT", "")
-      : 0;
-    const ticketId = "TKT" + String(Number(lastId) + 1).padStart(3, "0");
-
-    const now = new Date();
-    const ticketData = {
-      ticketId,
-      createdBy: currentStaff.name,
-      currentStaffId: currentStaff._id,
-      zoneNo: selectedZone?.name || "",
-      apartmentName: selectedBranch?.name || "",
-      roomNo: formData.roomNo,
-      priority: formData.priority,
-      remarks: formData.remarks,
-      status: "Pending",
-      createdDate: now.toISOString().split("T")[0],
-      createdTime: new Date().toISOString(),
-      lastUpdated: new Date().toISOString(),
-    };
+      toast.error("Remarks is required!");
+      return;
+    }
 
     try {
-      const res = await axios.post(`${API_BASE_URL}
-/api/tickets`, ticketData);
+      const selectedZone = zones.find((z) => z._id === formData.zoneId);
+      const selectedBranch = selectedZone?.branches[formData.branchIndex];
 
-      // ✅ Show browser notification
-      showBrowserNotification(
-        "Ticket Created",
-        `${currentStaff.name} created ticket ${res.data.ticketId}`
+      // Get last ticket
+      const lastTickets = await axios.get(`${API_BASE_URL}/api/tickets`);
+      const lastId = lastTickets.data.length
+        ? lastTickets.data[0].ticketId.replace("TKT", "")
+        : 0;
+
+      const ticketId = "TKT" + String(Number(lastId) + 1).padStart(3, "0");
+
+      const ticketData = {
+        ticketId,
+        createdBy: currentStaff.name,
+        currentStaffId: currentStaff._id,
+        zoneNo: selectedZone?.name || "",
+        apartmentName: selectedBranch?.name || "",
+        roomNo: formData.roomNo,
+        priority: formData.priority,
+        remarks: formData.remarks,
+        status: "Pending",
+        createdDate: new Date().toISOString().split("T")[0],
+        createdTime: new Date().toISOString(),
+        lastUpdated: new Date().toISOString(),
+      };
+
+      const res = await axios.post(
+        `${API_BASE_URL}/api/tickets`,
+        ticketData
       );
 
-      // ✅ Call handleNotificationRead if passed from layout
+      // 🔕 Mobile-safe notification
+      try {
+        if (Notification.permission === "granted") {
+          showBrowserNotification(
+            "Ticket Created",
+            `${currentStaff.name} created ticket ${res.data.ticketId}`
+          );
+        }
+      } catch (e) {
+        console.log("Notification blocked on mobile");
+      }
+
       if (handleNotificationRead) handleNotificationRead();
 
-      toast.success(`Ticket ${ticketId} created successfully!`, { autoClose: 3000 });
+      toast.success(`Ticket ${ticketId} created successfully!`);
 
-      setFormData({ zoneId: "", branchIndex: "", roomNo: "", priority: "Low", remarks: "" });
+      // Reset form
+      setFormData({
+        zoneId: "",
+        branchIndex: "",
+        roomNo: "",
+        priority: "Low",
+        remarks: "",
+      });
       setBranches([]);
       setRooms([]);
 
-      setTimeout(() => {
-        navigate("/staff-dashboard", { state: { refresh: true, newTicketId: ticketId } });
-      }, 1200);
+      // ✅ Navigate immediately (mobile safe)
+      navigate("/staff-dashboard", {
+        state: { refresh: true, newTicketId: ticketId },
+      });
+
     } catch (err) {
-      console.error("Ticket creation error:", err.response || err);
+      console.error("Ticket creation error:", err);
       toast.error("Failed to create ticket!");
     }
   };
 
   return (
     <StaffLayout>
-        <h2 className="page-title">Raise Ticket</h2>
+      <h2 className="page-title">Raise Ticket</h2>
       <div className="raise-ticket-container">
         <form className="ticket-form" onSubmit={handleSubmit}>
           <label>
@@ -170,7 +184,9 @@ const RaiseTicket = ({ handleNotificationRead }) => {
               disabled={!rooms.length}
             >
               <option value="">Select Room</option>
-              {rooms.map((room, idx) => (<option key={idx} value={room}>{room}</option>))}
+              {rooms.map((room, idx) => (
+                <option key={idx} value={room}>{room}</option>
+              ))}
             </select>
           </label>
 
@@ -185,16 +201,17 @@ const RaiseTicket = ({ handleNotificationRead }) => {
 
           <label>
             Remarks:
-           <textarea
-  name="remarks"
-  value={formData.remarks}
-  onChange={handleChange}
-  required
-/>
-
+            <textarea
+              name="remarks"
+              value={formData.remarks}
+              onChange={handleChange}
+              required
+            />
           </label>
 
-          <button type="submit" className="submit-btn">Create Ticket</button>
+          <button type="submit" className="submit-btn">
+            Create Ticket
+          </button>
         </form>
       </div>
     </StaffLayout>
