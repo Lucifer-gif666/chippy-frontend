@@ -7,7 +7,11 @@ import LastUpdated from "../components/LastUpdated";
 import "../styles/MyTickets.css";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+
+// ⭐ Reusable wrapper
 import ClosedTicketWrapper from "../ReusableComp/ClosedTicketWrapper";
+
+// 🔔 Notification helper (mobile-safe usage)
 import { showBrowserNotification } from "../utils/browserNotifications";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL;
@@ -15,27 +19,34 @@ const API_BASE_URL = import.meta.env.VITE_API_URL;
 const MyTickets = () => {
   const [tickets, setTickets] = useState([]);
   const [activeTab, setActiveTab] = useState("assigned");
+
   const [filterText, setFilterText] = useState("");
   const [filterZone, setFilterZone] = useState("");
   const [filterPriority, setFilterPriority] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
   const [filterDate, setFilterDate] = useState("");
+
   const [loadingTickets, setLoadingTickets] = useState({});
   const [remarksInput, setRemarksInput] = useState({});
   const [highlightTicket, setHighlightTicket] = useState(null);
+
   const TICKETS_PER_PAGE = 12;
   const [page, setPage] = useState(1);
   const rowRefs = useRef({});
 
-  useEffect(() => setPage(1), [
-    activeTab, filterText, filterZone, filterPriority, filterStatus, filterDate
-  ]);
+  const handlePageChange = (p) => setPage(p);
 
+  useEffect(() => {
+    setPage(1);
+  }, [activeTab, filterText, filterZone, filterPriority, filterStatus, filterDate]);
+
+  // 🔐 Current staff
   const rawStaff = localStorage.getItem("currentStaff");
   const currentStaff = rawStaff ? JSON.parse(rawStaff) : null;
 
+  // 🧠 Robust ID extractor
   const extractId = (val) => {
-    if (!val) return null;
+    if (!val && val !== 0) return null;
     if (typeof val === "string") return val;
     if (val.$oid) return val.$oid;
     if (val.$id) return val.$id;
@@ -51,6 +62,7 @@ const MyTickets = () => {
 
   const staffId = extractId(currentStaff?._id);
 
+  // 📡 Fetch tickets
   const fetchTickets = async () => {
     try {
       const res = await axios.get(
@@ -63,12 +75,16 @@ const MyTickets = () => {
     }
   };
 
-  useEffect(() => { fetchTickets(); }, []);
+  useEffect(() => {
+    fetchTickets();
+  }, []);
+
   useEffect(() => {
     const interval = setInterval(fetchTickets, 30000);
     return () => clearInterval(interval);
   }, []);
 
+  // 🔄 Status normalizer
   const normalizeStatus = (status) => {
     if (!status) return "";
     const s = status.toLowerCase();
@@ -78,6 +94,7 @@ const MyTickets = () => {
     return status;
   };
 
+  // 📅 Date & time helpers
   const formatDate = (dateStr) => {
     if (!dateStr) return "";
     const d = new Date(dateStr);
@@ -95,59 +112,108 @@ const MyTickets = () => {
     });
   };
 
-  // 🔹 ACCEPT (SAFE)
-  const handleAccept = async (ticketId) => {
-    if (loadingTickets[ticketId]) return;
-    const ticket = tickets.find((t) => extractId(t._id) === ticketId);
+  // 🧩 Tickets per active tab
+  const ticketsForActiveTab = tickets.filter((t) => {
+    const assignedId = extractId(t.assignedToId);
+    const createdId = extractId(t.createdById);
+
+    if (activeTab === "inprogress")
+      return assignedId === staffId && normalizeStatus(t.status) === "In Progress";
+    if (activeTab === "resolved")
+      return assignedId === staffId && normalizeStatus(t.status) === "Resolved";
+    if (activeTab === "created") return createdId === staffId;
+
+    return assignedId === staffId && normalizeStatus(t.status) === "Pending";
+  });
+
+  // 🎛️ Filter options
+  const zones = [...new Set(ticketsForActiveTab.map(t => t.zoneNo).filter(Boolean))];
+  const priorities = [...new Set(ticketsForActiveTab.map(t => t.priority).filter(Boolean))];
+  const statuses = [...new Set(ticketsForActiveTab.map(t => normalizeStatus(t.status)).filter(Boolean))];
+
+  // 🔍 Apply filters
+  const filteredTickets = ticketsForActiveTab.filter((t) => {
+    const matchesText =
+      !filterText ||
+      (t.ticketId || "").toLowerCase().includes(filterText.toLowerCase()) ||
+      (t.createdBy || "").toLowerCase().includes(filterText.toLowerCase()) ||
+      (t.zoneNo || "").toLowerCase().includes(filterText.toLowerCase());
+
+    const matchesZone = filterZone ? t.zoneNo === filterZone : true;
+    const matchesPriority = filterPriority ? t.priority === filterPriority : true;
+    const matchesStatus = filterStatus ? normalizeStatus(t.status) === filterStatus : true;
+
+    const matchesDate = !filterDate
+      || new Date(t.createdAt).toISOString().slice(0, 10)
+        === new Date(filterDate).toISOString().slice(0, 10);
+
+    return matchesText && matchesZone && matchesPriority && matchesStatus && matchesDate;
+  });
+
+  // 📄 Pagination
+  const totalPages = Math.ceil(filteredTickets.length / TICKETS_PER_PAGE);
+  const paginatedTickets = filteredTickets.slice(
+    (page - 1) * TICKETS_PER_PAGE,
+    page * TICKETS_PER_PAGE
+  );
+
+  // ===================== ACTIONS (MOBILE SAFE) ===================== //
+
+  const safeNotify = (title, body) => {
+    try {
+      if (Notification.permission === "granted") {
+        showBrowserNotification(title, body);
+      }
+    } catch {
+      console.log("Notification blocked on mobile");
+    }
+  };
+
+  // ✅ ACCEPT
+  const handleAccept = async (id) => {
+    if (loadingTickets[id]) return;
+    const ticket = tickets.find(t => extractId(t._id) === id);
     if (!ticket) return;
 
+    setLoadingTickets(p => ({ ...p, [id]: true }));
     let success = false;
-    setLoadingTickets((p) => ({ ...p, [ticketId]: true }));
 
     try {
-      await axios.patch(`${API_BASE_URL}/api/tickets/accept/${ticketId}`);
+      await axios.patch(`${API_BASE_URL}/api/tickets/accept/${id}`);
       success = true;
 
       toast.success(`Ticket ${ticket.ticketId} accepted!`);
       await fetchTickets();
       setActiveTab("inprogress");
-      setHighlightTicket(ticketId);
-
+      setHighlightTicket(id);
       setTimeout(() => setHighlightTicket(null), 3000);
-      rowRefs.current[ticketId]?.scrollIntoView({ behavior: "smooth", block: "center" });
+      rowRefs.current[id]?.scrollIntoView({ behavior: "smooth", block: "center" });
     } catch (err) {
       console.error(err);
       toast.error("Failed to accept ticket");
     } finally {
-      setLoadingTickets((p) => ({ ...p, [ticketId]: false }));
+      setLoadingTickets(p => ({ ...p, [id]: false }));
     }
 
     if (success) {
-      try {
-        if (Notification.permission === "granted") {
-          showBrowserNotification(
-            "Ticket Accepted",
-            `${currentStaff.name} accepted ticket ${ticket.ticketId}`
-          );
-        }
-      } catch {}
+      safeNotify("Ticket Accepted", `${currentStaff.name} accepted ticket ${ticket.ticketId}`);
     }
   };
 
-  // 🔹 RESOLVE (SAFE)
-  const handleResolve = async (ticketId) => {
-    const updatedRemarks = (remarksInput[ticketId] || "").trim();
+  // ✅ RESOLVE
+  const handleResolve = async (id) => {
+    const updatedRemarks = (remarksInput[id] || "").trim();
     if (!updatedRemarks) return toast.error("Please enter updated remarks.");
-    if (loadingTickets[ticketId]) return;
+    if (loadingTickets[id]) return;
 
-    const ticket = tickets.find((t) => extractId(t._id) === ticketId);
+    const ticket = tickets.find(t => extractId(t._id) === id);
     if (!ticket) return;
 
+    setLoadingTickets(p => ({ ...p, [id]: true }));
     let success = false;
-    setLoadingTickets((p) => ({ ...p, [ticketId]: true }));
 
     try {
-      await axios.patch(`${API_BASE_URL}/api/tickets/resolve/${ticketId}`, {
+      await axios.patch(`${API_BASE_URL}/api/tickets/resolve/${id}`, {
         updatedRemarks,
         resolvedBy: currentStaff?.name,
         resolvedById: currentStaff?._id,
@@ -155,43 +221,35 @@ const MyTickets = () => {
 
       success = true;
       toast.success(`Ticket ${ticket.ticketId} resolved!`);
-      setRemarksInput((p) => ({ ...p, [ticketId]: "" }));
+      setRemarksInput(p => ({ ...p, [id]: "" }));
       await fetchTickets();
       setActiveTab("resolved");
-      setHighlightTicket(ticketId);
-
+      setHighlightTicket(id);
       setTimeout(() => setHighlightTicket(null), 3000);
-      rowRefs.current[ticketId]?.scrollIntoView({ behavior: "smooth", block: "center" });
+      rowRefs.current[id]?.scrollIntoView({ behavior: "smooth", block: "center" });
     } catch (err) {
       console.error(err);
       toast.error("Failed to resolve ticket");
     } finally {
-      setLoadingTickets((p) => ({ ...p, [ticketId]: false }));
+      setLoadingTickets(p => ({ ...p, [id]: false }));
     }
 
     if (success) {
-      try {
-        if (Notification.permission === "granted") {
-          showBrowserNotification(
-            "Ticket Resolved",
-            `${currentStaff.name} resolved ticket ${ticket.ticketId}`
-          );
-        }
-      } catch {}
+      safeNotify("Ticket Resolved", `${currentStaff.name} resolved ticket ${ticket.ticketId}`);
     }
   };
 
-  // 🔹 HOLD (SAFE)
-  const handleHold = async (ticketId) => {
-    if (loadingTickets[ticketId]) return;
-    const ticket = tickets.find((t) => extractId(t._id) === ticketId);
+  // ✅ HOLD
+  const handleHold = async (id) => {
+    if (loadingTickets[id]) return;
+    const ticket = tickets.find(t => extractId(t._id) === id);
     if (!ticket) return;
 
+    setLoadingTickets(p => ({ ...p, [id]: true }));
     let success = false;
-    setLoadingTickets((p) => ({ ...p, [ticketId]: true }));
 
     try {
-      await axios.patch(`${API_BASE_URL}/api/tickets/hold/${ticketId}`, {
+      await axios.patch(`${API_BASE_URL}/api/tickets/hold/${id}`, {
         updatedRemarks: "On Hold",
         heldBy: currentStaff?.name,
         heldById: currentStaff?._id,
@@ -204,22 +262,15 @@ const MyTickets = () => {
       console.error(err);
       toast.error("Failed to put ticket on hold");
     } finally {
-      setLoadingTickets((p) => ({ ...p, [ticketId]: false }));
+      setLoadingTickets(p => ({ ...p, [id]: false }));
     }
 
     if (success) {
-      try {
-        if (Notification.permission === "granted") {
-          showBrowserNotification(
-            "Ticket On Hold",
-            `${currentStaff.name} put ticket ${ticket.ticketId} on hold`
-          );
-        }
-      } catch {}
+      safeNotify("Ticket On Hold", `${currentStaff.name} put ticket ${ticket.ticketId} on hold`);
     }
   };
 
-  /* 🔽 UI JSX BELOW IS UNCHANGED FROM YOUR ORIGINAL 🔽 */
+  // ===================== UI ===================== //
   return (
     <StaffLayout>
         <h2 className="page-title">My Tickets</h2>
