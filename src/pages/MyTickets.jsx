@@ -7,11 +7,7 @@ import LastUpdated from "../components/LastUpdated";
 import "../styles/MyTickets.css";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-
-// ⭐ Reusable wrapper import
 import ClosedTicketWrapper from "../ReusableComp/ClosedTicketWrapper";
-
-// ✅ Browser notification helper
 import { showBrowserNotification } from "../utils/browserNotifications";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL;
@@ -31,15 +27,15 @@ const MyTickets = () => {
   const [page, setPage] = useState(1);
   const rowRefs = useRef({});
 
-  const handlePageChange = (val) => setPage(val);
-
-  useEffect(() => setPage(1), [activeTab, filterText, filterZone, filterPriority, filterStatus, filterDate]);
+  useEffect(() => setPage(1), [
+    activeTab, filterText, filterZone, filterPriority, filterStatus, filterDate
+  ]);
 
   const rawStaff = localStorage.getItem("currentStaff");
   const currentStaff = rawStaff ? JSON.parse(rawStaff) : null;
 
   const extractId = (val) => {
-    if (!val && val !== 0) return null;
+    if (!val) return null;
     if (typeof val === "string") return val;
     if (val.$oid) return val.$oid;
     if (val.$id) return val.$id;
@@ -53,11 +49,13 @@ const MyTickets = () => {
     return null;
   };
 
-  const staffId = extractId(currentStaff && currentStaff._id ? currentStaff._id : currentStaff);
+  const staffId = extractId(currentStaff?._id);
 
   const fetchTickets = async () => {
     try {
-      const res = await axios.get(`${API_BASE_URL}/api/tickets${staffId ? `?staffId=${staffId}` : ""}`);
+      const res = await axios.get(
+        `${API_BASE_URL}/api/tickets${staffId ? `?staffId=${staffId}` : ""}`
+      );
       setTickets(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       console.error(err);
@@ -66,7 +64,10 @@ const MyTickets = () => {
   };
 
   useEffect(() => { fetchTickets(); }, []);
-  useEffect(() => { const interval = setInterval(fetchTickets, 30000); return () => clearInterval(interval); }, []);
+  useEffect(() => {
+    const interval = setInterval(fetchTickets, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   const normalizeStatus = (status) => {
     if (!status) return "";
@@ -77,156 +78,148 @@ const MyTickets = () => {
     return status;
   };
 
-  const formatToDDMMYYYY = (d) => {
-    if (!d) return "";
-    const date = new Date(d);
-    const day = String(date.getDate()).padStart(2, "0");
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const year = date.getFullYear();
-    return `${day}-${month}-${year}`;
+  const formatDate = (dateStr) => {
+    if (!dateStr) return "";
+    const d = new Date(dateStr);
+    return `${String(d.getDate()).padStart(2, "0")}/${String(
+      d.getMonth() + 1
+    ).padStart(2, "0")}/${d.getFullYear()}`;
   };
 
-  // ✅ Tickets filtered per tab before applying filter dropdowns
-  const ticketsForActiveTab = tickets.filter((t) => {
-    const assignedId = extractId(t.assignedToId);
-    const createdId = extractId(t.createdById);
-
-    if (activeTab === "inprogress") return assignedId === staffId && normalizeStatus(t.status) === "In Progress";
-    if (activeTab === "resolved") return assignedId === staffId && normalizeStatus(t.status) === "Resolved";
-    if (activeTab === "created") return createdId === staffId;
-    return assignedId === staffId && normalizeStatus(t.status) === "Pending";
-  });
-
-  // ✅ Dynamic filter options per tab
-  const zones = [...new Set(ticketsForActiveTab.map((t) => t.zoneNo).filter(Boolean))];
-  const priorities = [...new Set(ticketsForActiveTab.map((t) => t.priority).filter(Boolean))];
-  const statuses = [...new Set(ticketsForActiveTab.map((t) => normalizeStatus(t.status)).filter(Boolean))];
-
-  const filteredTickets = () => {
-    return ticketsForActiveTab.filter((t) => {
-      const matchesText = filterText
-        ? (t.ticketId || "").toLowerCase().includes(filterText.toLowerCase()) ||
-          (t.createdBy || "").toLowerCase().includes(filterText.toLowerCase()) ||
-          (t.zoneNo || "").toLowerCase().includes(filterText.toLowerCase())
-        : true;
-      const matchesZone = filterZone ? t.zoneNo === filterZone : true;
-      const matchesPriority = filterPriority ? t.priority === filterPriority : true;
-      const matchesStatus = filterStatus ? normalizeStatus(t.status) === filterStatus : true;
-      const formattedCalendarDate = filterDate ? new Date(filterDate).toISOString().slice(0,10) : "";
-      const matchesDate = !filterDate || new Date(t.createdAt).toISOString().slice(0,10) === formattedCalendarDate;
-      return matchesText && matchesZone && matchesPriority && matchesStatus && matchesDate;
+  const formatTime = (dateStr) => {
+    if (!dateStr) return "";
+    return new Date(dateStr).toLocaleTimeString("en-IN", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
     });
   };
 
-  const list = filteredTickets();
-  const totalPages = Math.ceil(list.length / TICKETS_PER_PAGE);
-  const paginatedTickets = list.slice((page - 1) * TICKETS_PER_PAGE, page * TICKETS_PER_PAGE);
-
-  // ✅ Accept Ticket → auto navigate + highlight
+  // 🔹 ACCEPT (SAFE)
   const handleAccept = async (ticketId) => {
     if (loadingTickets[ticketId]) return;
     const ticket = tickets.find((t) => extractId(t._id) === ticketId);
     if (!ticket) return;
 
-    setLoadingTickets((prev) => ({ ...prev, [ticketId]: true }));
+    let success = false;
+    setLoadingTickets((p) => ({ ...p, [ticketId]: true }));
+
     try {
       await axios.patch(`${API_BASE_URL}/api/tickets/accept/${ticketId}`);
-      showBrowserNotification("Ticket Accepted", `${currentStaff.name} accepted ticket ${ticket.ticketId}`);
+      success = true;
+
       toast.success(`Ticket ${ticket.ticketId} accepted!`);
       await fetchTickets();
       setActiveTab("inprogress");
       setHighlightTicket(ticketId);
+
       setTimeout(() => setHighlightTicket(null), 3000);
       rowRefs.current[ticketId]?.scrollIntoView({ behavior: "smooth", block: "center" });
     } catch (err) {
       console.error(err);
       toast.error("Failed to accept ticket");
     } finally {
-      setLoadingTickets((prev) => ({ ...prev, [ticketId]: false }));
+      setLoadingTickets((p) => ({ ...p, [ticketId]: false }));
+    }
+
+    if (success) {
+      try {
+        if (Notification.permission === "granted") {
+          showBrowserNotification(
+            "Ticket Accepted",
+            `${currentStaff.name} accepted ticket ${ticket.ticketId}`
+          );
+        }
+      } catch {}
     }
   };
 
-  // ✅ Resolve Ticket → auto navigate + highlight
+  // 🔹 RESOLVE (SAFE)
   const handleResolve = async (ticketId) => {
     const updatedRemarks = (remarksInput[ticketId] || "").trim();
     if (!updatedRemarks) return toast.error("Please enter updated remarks.");
     if (loadingTickets[ticketId]) return;
+
     const ticket = tickets.find((t) => extractId(t._id) === ticketId);
     if (!ticket) return;
 
-    setLoadingTickets((prev) => ({ ...prev, [ticketId]: true }));
+    let success = false;
+    setLoadingTickets((p) => ({ ...p, [ticketId]: true }));
+
     try {
-      await axios.patch(`${API_BASE_URL}/api/tickets/resolve/${ticketId}`, { 
+      await axios.patch(`${API_BASE_URL}/api/tickets/resolve/${ticketId}`, {
         updatedRemarks,
         resolvedBy: currentStaff?.name,
-        resolvedById: currentStaff?._id
+        resolvedById: currentStaff?._id,
       });
-      showBrowserNotification("Ticket Resolved", `${currentStaff.name} resolved ticket ${ticket.ticketId}`);
+
+      success = true;
       toast.success(`Ticket ${ticket.ticketId} resolved!`);
-      setRemarksInput((prev) => ({ ...prev, [ticketId]: "" }));
+      setRemarksInput((p) => ({ ...p, [ticketId]: "" }));
       await fetchTickets();
       setActiveTab("resolved");
       setHighlightTicket(ticketId);
+
       setTimeout(() => setHighlightTicket(null), 3000);
       rowRefs.current[ticketId]?.scrollIntoView({ behavior: "smooth", block: "center" });
     } catch (err) {
       console.error(err);
       toast.error("Failed to resolve ticket");
     } finally {
-      setLoadingTickets((prev) => ({ ...prev, [ticketId]: false }));
+      setLoadingTickets((p) => ({ ...p, [ticketId]: false }));
+    }
+
+    if (success) {
+      try {
+        if (Notification.permission === "granted") {
+          showBrowserNotification(
+            "Ticket Resolved",
+            `${currentStaff.name} resolved ticket ${ticket.ticketId}`
+          );
+        }
+      } catch {}
     }
   };
 
-  // ✅ Hold Ticket
-const handleHold = async (ticketId) => {
-  if (loadingTickets[ticketId]) return;
+  // 🔹 HOLD (SAFE)
+  const handleHold = async (ticketId) => {
+    if (loadingTickets[ticketId]) return;
+    const ticket = tickets.find((t) => extractId(t._id) === ticketId);
+    if (!ticket) return;
 
-  const ticket = tickets.find((t) => extractId(t._id) === ticketId);
-  if (!ticket) return;
+    let success = false;
+    setLoadingTickets((p) => ({ ...p, [ticketId]: true }));
 
-  setLoadingTickets((prev) => ({ ...prev, [ticketId]: true }));
+    try {
+      await axios.patch(`${API_BASE_URL}/api/tickets/hold/${ticketId}`, {
+        updatedRemarks: "On Hold",
+        heldBy: currentStaff?.name,
+        heldById: currentStaff?._id,
+      });
 
-  try {
-    await axios.patch(`${API_BASE_URL}/api/tickets/hold/${ticketId}`, {
-      updatedRemarks: "On Hold",
-      heldBy: currentStaff?.name,
-      heldById: currentStaff?._id,
-    });
+      success = true;
+      toast.info(`Ticket ${ticket.ticketId} is on hold`);
+      await fetchTickets();
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to put ticket on hold");
+    } finally {
+      setLoadingTickets((p) => ({ ...p, [ticketId]: false }));
+    }
 
-    showBrowserNotification(
-      "Ticket On Hold",
-      `${currentStaff.name} put ticket ${ticket.ticketId} on hold`
-    );
+    if (success) {
+      try {
+        if (Notification.permission === "granted") {
+          showBrowserNotification(
+            "Ticket On Hold",
+            `${currentStaff.name} put ticket ${ticket.ticketId} on hold`
+          );
+        }
+      } catch {}
+    }
+  };
 
-    toast.info(`Ticket ${ticket.ticketId} is on hold`);
-    await fetchTickets();
-  } catch (err) {
-    console.error(err);
-    toast.error("Failed to put ticket on hold");
-  } finally {
-    setLoadingTickets((prev) => ({ ...prev, [ticketId]: false }));
-  }
-};
-
-const formatDate = (dateStr) => {
-  if (!dateStr) return "";
-  const date = new Date(dateStr);
-  const dd = String(date.getDate()).padStart(2, "0");
-  const mm = String(date.getMonth() + 1).padStart(2, "0");
-  const yyyy = date.getFullYear();
-  return `${dd}/${mm}/${yyyy}`;
-};
-
-const formatTime = (dateStr) => {
-  if (!dateStr) return "";
-  const date = new Date(dateStr);
-  return date.toLocaleTimeString("en-IN", {
-    hour: "numeric",
-    minute: "2-digit",
-    hour12: true,
-  });
-};
-
+  /* 🔽 UI JSX BELOW IS UNCHANGED FROM YOUR ORIGINAL 🔽 */
   return (
     <StaffLayout>
         <h2 className="page-title">My Tickets</h2>
