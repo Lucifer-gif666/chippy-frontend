@@ -14,6 +14,8 @@ const RaiseTicket = ({ handleNotificationRead }) => {
   const [zones, setZones] = useState([]);
   const [branches, setBranches] = useState([]);
   const [rooms, setRooms] = useState([]);
+  const [isSubmitting, setIsSubmitting] = useState(false); // ✅ NEW
+
   const [formData, setFormData] = useState({
     zoneId: "",
     branchIndex: "",
@@ -57,16 +59,22 @@ const RaiseTicket = ({ handleNotificationRead }) => {
   }, [formData.branchIndex, branches]);
 
   const handleChange = (e) => {
+    if (isSubmitting) return; // ✅ prevent changes while submitting
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // ✅ HARD GUARD (prevents double click)
+    if (isSubmitting) return;
+
     if (!formData.remarks.trim()) {
       toast.error("Remarks is required!");
       return;
     }
+
+    setIsSubmitting(true); // 🔒 LOCK SUBMISSION
 
     try {
       const selectedZone = zones.find((z) => z._id === formData.zoneId);
@@ -95,10 +103,7 @@ const RaiseTicket = ({ handleNotificationRead }) => {
         lastUpdated: new Date().toISOString(),
       };
 
-      const res = await axios.post(
-        `${API_BASE_URL}/api/tickets`,
-        ticketData
-      );
+      const res = await axios.post(`${API_BASE_URL}/api/tickets`, ticketData);
 
       // 🔕 Mobile-safe notification
       try {
@@ -108,9 +113,7 @@ const RaiseTicket = ({ handleNotificationRead }) => {
             `${currentStaff.name} created ticket ${res.data.ticketId}`
           );
         }
-      } catch (e) {
-        console.log("Notification blocked on mobile");
-      }
+      } catch {}
 
       if (handleNotificationRead) handleNotificationRead();
 
@@ -127,14 +130,15 @@ const RaiseTicket = ({ handleNotificationRead }) => {
       setBranches([]);
       setRooms([]);
 
-      // ✅ Navigate immediately (mobile safe)
+      // ✅ Navigate immediately
       navigate("/staff-dashboard", {
         state: { refresh: true, newTicketId: ticketId },
       });
-
     } catch (err) {
       console.error("Ticket creation error:", err);
       toast.error("Failed to create ticket!");
+    } finally {
+      setIsSubmitting(false); // 🔓 UNLOCK (safety)
     }
   };
 
@@ -150,10 +154,18 @@ const RaiseTicket = ({ handleNotificationRead }) => {
 
           <label>
             Zone:
-            <select name="zoneId" value={formData.zoneId} onChange={handleChange} required>
+            <select
+              name="zoneId"
+              value={formData.zoneId}
+              onChange={handleChange}
+              required
+              disabled={isSubmitting}
+            >
               <option value="">Select Zone</option>
               {zones.map((zone) => (
-                <option key={zone._id} value={zone._id}>{zone.name}</option>
+                <option key={zone._id} value={zone._id}>
+                  {zone.name}
+                </option>
               ))}
             </select>
           </label>
@@ -165,11 +177,13 @@ const RaiseTicket = ({ handleNotificationRead }) => {
               value={formData.branchIndex}
               onChange={handleChange}
               required
-              disabled={!branches.length}
+              disabled={!branches.length || isSubmitting}
             >
               <option value="">Select Branch</option>
               {branches.map((branch, idx) => (
-                <option key={idx} value={idx}>{branch.name}</option>
+                <option key={idx} value={idx}>
+                  {branch.name}
+                </option>
               ))}
             </select>
           </label>
@@ -181,18 +195,25 @@ const RaiseTicket = ({ handleNotificationRead }) => {
               value={formData.roomNo}
               onChange={handleChange}
               required
-              disabled={!rooms.length}
+              disabled={!rooms.length || isSubmitting}
             >
               <option value="">Select Room</option>
               {rooms.map((room, idx) => (
-                <option key={idx} value={room}>{room}</option>
+                <option key={idx} value={room}>
+                  {room}
+                </option>
               ))}
             </select>
           </label>
 
           <label>
             Priority:
-            <select name="priority" value={formData.priority} onChange={handleChange}>
+            <select
+              name="priority"
+              value={formData.priority}
+              onChange={handleChange}
+              disabled={isSubmitting}
+            >
               <option>Low</option>
               <option>Medium</option>
               <option>High</option>
@@ -206,11 +227,16 @@ const RaiseTicket = ({ handleNotificationRead }) => {
               value={formData.remarks}
               onChange={handleChange}
               required
+              disabled={isSubmitting}
             />
           </label>
 
-          <button type="submit" className="submit-btn">
-            Create Ticket
+          <button
+            type="submit"
+            className={`submit-btn ${isSubmitting ? "disabled-btn" : ""}`}
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? "Creating..." : "Create Ticket"}
           </button>
         </form>
       </div>
