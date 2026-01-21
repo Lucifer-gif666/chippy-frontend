@@ -9,7 +9,6 @@ import ExpandableText from "../components/ExpandableText";
 import LastUpdated from "../components/LastUpdated";
 import { showBrowserNotification } from "../utils/browserNotifications";
 
-// ✅ API base URL from env (NO localhost hardcode)
 const API_BASE_URL = import.meta.env.VITE_API_URL;
 
 const AssignTickets = () => {
@@ -29,10 +28,9 @@ const AssignTickets = () => {
   const TICKETS_PER_PAGE = 12;
   const [page, setPage] = useState(1);
 
-  useEffect(
-    () => setPage(1),
-    [filterText, filterZone, filterPriority, filterStatus, filterDate, activeTab]
-  );
+  useEffect(() => {
+    setPage(1);
+  }, [filterText, filterZone, filterPriority, filterStatus, filterDate, activeTab]);
 
   const ALLOWED_STATUS_NORMALS = new Set([
     "pending",
@@ -48,10 +46,9 @@ const AssignTickets = () => {
   const formatToDDMMYYYY = (d) => {
     if (!d) return "";
     const date = new Date(d);
-    const day = String(date.getDate()).padStart(2, "0");
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const year = date.getFullYear();
-    return `${day}-${month}-${year}`;
+    return `${String(date.getDate()).padStart(2, "0")}-${String(
+      date.getMonth() + 1
+    ).padStart(2, "0")}-${date.getFullYear()}`;
   };
 
   // Fetch staff + tickets
@@ -67,6 +64,7 @@ const AssignTickets = () => {
         const staff = staffData.find(
           (s) => String(s._id) === String(assignedStaffId)
         );
+
         return {
           ...t,
           staffName: staff ? staff.name : "None",
@@ -91,12 +89,15 @@ const AssignTickets = () => {
 
   const currentStaff = JSON.parse(localStorage.getItem("currentStaff"));
 
-  //console.log(currentStaff.name)
+  // 🔹 Assign ticket (FINAL SAFE VERSION)
   const handleAssign = async (ticketMongoId, staffId) => {
     if (!staffId) return;
+
     const staff = staffList.find((s) => s._id === staffId);
     const ticket = tickets.find((t) => t._id === ticketMongoId);
-    if (!ticket) return;
+    if (!ticket || !staff) return;
+
+    let assignSuccess = false;
 
     try {
       await axios.patch(
@@ -104,9 +105,11 @@ const AssignTickets = () => {
         {
           staffId,
           staffName: staff.name,
-          assignedBy: currentStaff.name
+          assignedBy: currentStaff.name,
         }
       );
+
+      assignSuccess = true;
 
       setTickets((prev) =>
         prev.map((t) =>
@@ -121,30 +124,35 @@ const AssignTickets = () => {
         )
       );
 
-       toast.success(`Ticket ${ticket.ticketId} assigned to ${staff.name}`);
-       setHighlightTicket(ticketMongoId);
-
-      showBrowserNotification(
-        "Ticket Assigned",
-        `${currentStaff.name} assigned ticket ${ticket.ticketId} to ${staff.name}`
-      );
-
-      // Switch to Manage Assignments tab
+      toast.success(`Ticket ${ticket.ticketId} assigned to ${staff.name}`);
+      setHighlightTicket(ticketMongoId);
       setActiveTab("assigned");
 
       setTimeout(() => {
-        if (rowRefs.current[ticketMongoId]) {
-          rowRefs.current[ticketMongoId].scrollIntoView({
-            behavior: "smooth",
-            block: "center",
-          });
-        }
+        rowRefs.current[ticketMongoId]?.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
       }, 200);
 
       setTimeout(() => setHighlightTicket(null), 3000);
     } catch (err) {
-      toast.error("Failed to assign ticket!");
       console.error(err);
+      toast.error("Failed to assign ticket!");
+    }
+
+    // 🔔 Notification OUTSIDE try/catch (cannot break logic)
+    if (assignSuccess) {
+      try {
+        if (Notification.permission === "granted") {
+          showBrowserNotification(
+            "Ticket Assigned",
+            `${currentStaff.name} assigned ticket ${ticket.ticketId} to ${staff.name}`
+          );
+        }
+      } catch (e) {
+        console.log("Notification blocked on mobile");
+      }
     }
   };
 
@@ -168,28 +176,25 @@ const AssignTickets = () => {
       const calendarDate = filterDate
         ? filterDate.split("-").reverse().join("-")
         : "";
-      const dateMatch = !filterDate || ticketDate === calendarDate;
 
-      return textMatch && zoneMatch && priorityMatch && statusMatch && dateMatch;
+      return (
+        textMatch &&
+        zoneMatch &&
+        priorityMatch &&
+        statusMatch &&
+        (!filterDate || ticketDate === calendarDate)
+      );
     })
     .filter((t) => {
       const norm = normalizeStatus(t.status);
-      const isAllowedStatus = ALLOWED_STATUS_NORMALS.has(norm);
-      if (!isAllowedStatus) return false;
-      const isAssigned = Boolean(t.assignedToId);
-      return activeTab === "unassigned" ? !isAssigned : isAssigned;
+      if (!ALLOWED_STATUS_NORMALS.has(norm)) return false;
+      return activeTab === "unassigned" ? !t.assignedToId : !!t.assignedToId;
     })
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
   const zones = [...new Set(filteredTickets.map((t) => t.zoneNo).filter(Boolean))];
-  const priorities = [
-    ...new Set(filteredTickets.map((t) => t.priority).filter(Boolean)),
-  ];
-  const statuses = [
-    ...new Set(
-      filteredTickets.map((t) => normalizeStatus(t.status)).filter(Boolean)
-    ),
-  ];
+  const priorities = [...new Set(filteredTickets.map((t) => t.priority).filter(Boolean))];
+  const statuses = [...new Set(filteredTickets.map((t) => normalizeStatus(t.status)).filter(Boolean))];
 
   const totalPages = Math.ceil(filteredTickets.length / TICKETS_PER_PAGE);
   const paginatedTickets = filteredTickets.slice(
