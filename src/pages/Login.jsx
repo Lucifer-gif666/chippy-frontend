@@ -25,7 +25,7 @@ const Login = () => {
               onClick={() => navigate("/staff-login")}
               className="px-6 py-2 w-full bg-blue-600 text-white rounded transition transform hover:bg-blue-700 hover:scale-[1.02] active:scale-[0.98]"
             >
-              Staff Login
+              User Login
             </button>
           </div>   
 

@@ -11,7 +11,7 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       localStorage.removeItem("currentStaff");
       localStorage.removeItem("token");
-      window.location.href = "/login";
+      window.location.href = "/staff-login";
     }
     return Promise.reject(error);
   }
