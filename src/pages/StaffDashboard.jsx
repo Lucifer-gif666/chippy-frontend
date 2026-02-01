@@ -25,6 +25,41 @@ const StaffDashboard = ({ user }) => {
   const rowRefs = useRef({});
   const newTicketId = location.state?.newTicketId || null;
 
+  useEffect(() => {
+    const handleBackButton = (event) => {
+      event.preventDefault();
+
+      const confirmExit = window.confirm(
+        "Are you sure you want to exit?"
+      );
+
+      if (confirmExit) {
+        const isPWA =
+          window.matchMedia("(display-mode: standalone)").matches ||
+          window.navigator.standalone === true;
+
+        if (isPWA) {
+          // ✅ Exit PWA → Home screen
+          window.close();
+        } else {
+          // 🌐 Normal browser → go back
+          window.history.back();
+        }
+      } else {
+        // Stay on dashboard
+        window.history.pushState(null, "", window.location.href);
+      }
+    };
+
+    // Push fake history entry
+    window.history.pushState(null, "", window.location.href);
+    window.addEventListener("popstate", handleBackButton);
+
+    return () => {
+      window.removeEventListener("popstate", handleBackButton);
+    };
+  }, []);
+  
   const formatToDDMMYYYY = (d) => {
     if (!d) return "";
     const date = new Date(d);
