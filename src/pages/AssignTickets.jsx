@@ -346,12 +346,17 @@ const AssignTickets = () => {
                         : "Assign Staff"}
                     </option>
                     {staffList
-                      .filter((s) => String(s._id) !== String(t.assignedToId))
-                      .map((s) => (
-                        <option key={s._id} value={s._id}>
-                          {s.name}
-                        </option>
-                      ))}
+  .filter(
+    (s) =>
+      s.role !== "admin" && // 🚫 hide admins
+      String(s._id) !== String(t.assignedToId)
+  )
+  .map((s) => (
+    <option key={s._id} value={s._id}>
+      {s.name}
+    </option>
+  ))}
+
                   </select>
                 </div>
 

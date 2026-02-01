@@ -44,7 +44,10 @@ const StaffLayout = ({ children }) => {
       if (!user?._id) return;
       const res = await axios.get(`/api/notifications?staffId=${user._id}`);
       const notifications = Array.isArray(res.data) ? res.data : [];
-      const unread = notifications.filter((n) => !n.isRead).length;
+      const unread = notifications.filter(
+        (n) => !n.readBy?.includes(user._id)
+      ).length;
+      
       setUnreadCount(unread);
 
       // Optional: show browser notification pop-up for latest unread
