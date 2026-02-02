@@ -364,19 +364,31 @@ const StaffManagement = () => {
                 disabled={adding}
               />
               <select
-                value={newStaff.role}
-                onChange={(e) =>
-                  setNewStaff({ ...newStaff, role: e.target.value })
-                }
-                disabled={adding}
-              >
-               {ROLE_OPTIONS[currentUserRole]?.map((role) => (
-  <option key={role} value={role}>
-    {role.replace("_", " ").toUpperCase()}
-  </option>
-))}
+  value={staff.role}
+  onChange={(e) =>
+    handleRoleChange(staff._id, e.target.value, staff.role)
+  }
+  disabled={
+    !!actionLoadingIds[staff._id] ||
+    staff.role === "super_admin" ||
+    (currentUserRole === "admin" && staff.role === "admin")
+  }
+>
+  {/* Current role (disabled, just for display) 
+  <option value={staff.role} disabled>
+    {staff.role.replace("_", " ").toUpperCase()}
+  </option> */}
 
-              </select>
+  {/* Allowed target roles */}
+  {ROLE_OPTIONS[currentUserRole]
+    ?.filter((r) => r !== staff.role)
+    .map((role) => (
+      <option key={role} value={role}>
+        {role.replace("_", " ").toUpperCase()}
+      </option>
+    ))}
+</select>
+
               <button onClick={handleAddStaff} disabled={adding}>
                 {adding ? "Adding..." : "Add Staff"}
               </button>
