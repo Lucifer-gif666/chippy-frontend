@@ -1,6 +1,6 @@
 // src/pages/AssignTickets.jsx
 import React, { useEffect, useState, useRef } from "react";
-import axios from "axios";
+import api from "../api/axios";
 import StaffLayout from "../layout/StaffLayout";
 import "../styles/AssignTickets.css";
 import { toast } from "react-toastify";
@@ -54,11 +54,11 @@ const AssignTickets = () => {
   // Fetch staff + tickets
   const fetchData = async () => {
     try {
-      const staffRes = await axios.get(`${API_BASE_URL}/api/staff`);
+      const staffRes = await api.get("/api/staff");
       const staffData = staffRes.data;
       setStaffList(staffData);
 
-      const ticketsRes = await axios.get(`${API_BASE_URL}/api/tickets`);
+      const ticketsRes = await api.get("/api/tickets");
       const ticketsWithStaffNames = ticketsRes.data.map((t) => {
         const assignedStaffId = t.assignedToId?._id || t.assignedToId;
         const staff = staffData.find(
@@ -100,14 +100,12 @@ const AssignTickets = () => {
     let assignSuccess = false;
 
     try {
-      await axios.patch(
-        `${API_BASE_URL}/api/tickets/assign/${ticketMongoId}`,
-        {
-          staffId,
-          staffName: staff.name,
-          assignedBy: currentStaff.name,
-        }
-      );
+      await api.patch(`/api/tickets/assign/${ticketMongoId}`, {
+        staffId,
+        staffName: staff.name,
+        assignedBy: currentStaff.name,
+      });
+      
 
       assignSuccess = true;
 
