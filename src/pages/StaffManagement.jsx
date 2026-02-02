@@ -216,30 +216,23 @@ const StaffManagement = () => {
 
   const toggleVerified = async (id) => {
     if (!window.confirm("Change this user's active/inactive status?")) return;
-
+  
     try {
       setIdLoading(id, true);
-
-      const res = await fetch(
-        `${API_BASE_URL}/api/staff/toggle-verified/${id}`,
-        { method: "PATCH" }
+  
+      const { data } = await api.patch(
+        `/api/staff/toggle-verified/${id}`
       );
-
-      const data = await safeParse(res);
-
-      if (res.ok) {
-        toast.success(data.message || "Status changed");
-        await fetchStaff();
-      } else {
-        toast.error(data.message || "Failed");
-      }
-    } catch {
-      toast.error("Failed");
+  
+      toast.success(data?.message || "Status changed");
+      await fetchStaff();
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed");
     } finally {
       setIdLoading(id, false);
     }
   };
-
+  
   const handleDeleteStaff = async (id, name) => {
     if (id === currentUserId) {
       toast.error("You cannot delete your own account");
