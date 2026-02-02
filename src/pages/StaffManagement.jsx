@@ -143,25 +143,24 @@ const StaffManagement = () => {
       toast.error("Name and email are required");
       return;
     }
-
+  
     if (!window.confirm(`Add ${newStaff.name} as ${newStaff.role}?`)) return;
-
+  
     try {
-      setIdLoading(id, true);
-    
-      const { data } = await api.patch(
-        `/api/staff/update-role/${id}`,
-        { role: newRole }
-      );
-    
-      toast.success(data?.message || "Role updated");
+      setAdding(true);
+  
+      const { data } = await api.post("/api/staff/add", newStaff);
+  
+      toast.success(data?.message || "Staff added");
+      setNewStaff({ name: "", email: "", role: "staff" });
       await fetchStaff();
     } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to update role");
+      toast.error(err.response?.data?.message || "Failed to add staff");
     } finally {
-      setIdLoading(id, false);
+      setAdding(false);
     }
   };
+  
 
   const setIdLoading = (id, v) =>
     setActionLoadingIds((prev) => ({ ...prev, [id]: v }));
@@ -363,31 +362,20 @@ const StaffManagement = () => {
                 }
                 disabled={adding}
               />
-             <select
-  value={staff.role}
+            <select
+  value={newStaff.role}
   onChange={(e) =>
-    handleRoleChange(staff._id, e.target.value, staff.role)
+    setNewStaff({ ...newStaff, role: e.target.value })
   }
-  disabled={
-    !!actionLoadingIds[staff._id] ||
-    staff.role === "super_admin" ||
-    (currentUserRole === "admin" && staff.role === "admin")
-  }
+  disabled={adding}
 >
-  {/* current role (display only) */}
-  <option value={staff.role} disabled>
-    {staff.role.replace("_", " ").toUpperCase()}
-  </option>
-
-  {/* allowed transitions */}
-  {ROLE_OPTIONS[currentUserRole]
-    ?.filter((r) => r !== staff.role)
-    .map((role) => (
-      <option key={role} value={role}>
-        {role.replace("_", " ").toUpperCase()}
-      </option>
-    ))}
+  {ROLE_OPTIONS[currentUserRole]?.map((role) => (
+    <option key={role} value={role}>
+      {role.replace("_", " ").toUpperCase()}
+    </option>
+  ))}
 </select>
+
 
               <button onClick={handleAddStaff} disabled={adding}>
                 {adding ? "Adding..." : "Add Staff"}
@@ -463,16 +451,21 @@ const StaffManagement = () => {
     (currentUserRole === "admin" && staff.role === "admin")
   }
 >
+  {/* current role */}
+  <option value={staff.role} disabled>
+    {staff.role.replace("_", " ").toUpperCase()}
+  </option>
 
-                         {ROLE_OPTIONS[currentUserRole]
-  ?.filter((r) => r !== staff.role)
-  .map((role) => (
-    <option key={role} value={role}>
-      {role.replace("_", " ").toUpperCase()}
-    </option>
-))}
+  {/* allowed changes */}
+  {ROLE_OPTIONS[currentUserRole]
+    ?.filter((r) => r !== staff.role)
+    .map((role) => (
+      <option key={role} value={role}>
+        {role.replace("_", " ").toUpperCase()}
+      </option>
+    ))}
+</select>
 
-                        </select>
                       </div>
 
                       <div
