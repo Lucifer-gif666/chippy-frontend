@@ -191,23 +191,22 @@ const StaffManagement = () => {
     try {
       setIdLoading(id, true);
 
-      const res = await fetch(
-        `${API_BASE_URL}/api/staff/update-role/${id}`,
-        {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ role: newRole }),
-        }
-      );
-
-      const data = await safeParse(res);
-
-      if (res.ok) {
-        toast.success(data.message || "Role updated");
+      try {
+        setIdLoading(id, true);
+      
+        const { data } = await api.patch(
+          `/api/staff/update-role/${id}`,
+          { role: newRole }
+        );
+      
+        toast.success(data?.message || "Role updated");
         await fetchStaff();
-      } else {
-        toast.error(data.message || "Failed to update role");
+      } catch (err) {
+        toast.error(err.response?.data?.message || "Failed to update role");
+      } finally {
+        setIdLoading(id, false);
       }
+      
     } catch {
       toast.error("Failed to update role");
     } finally {
