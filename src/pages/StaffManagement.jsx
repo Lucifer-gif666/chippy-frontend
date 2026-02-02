@@ -60,24 +60,22 @@ const StaffManagement = () => {
   const fetchStaff = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/staff`);
-      const data = await safeParse(res);
-
+      const { data } = await api.get("/api/staff");
+  
       if (Array.isArray(data)) {
         setAllStaff(data);
-      } else if (data?.staff && Array.isArray(data.staff)) {
-        setAllStaff(data.staff);
       } else {
-        toast.error("Unexpected staff response format");
         setAllStaff([]);
+        toast.error("Unexpected staff response");
       }
-    } catch {
+    } catch (err) {
       toast.error("Failed to load staff");
       setAllStaff([]);
     } finally {
       setLoading(false);
     }
   }, []);
+  
 
   const fetchTickets = useCallback(async () => {
     setTicketsLoading(true);
@@ -149,27 +147,19 @@ const StaffManagement = () => {
     if (!window.confirm(`Add ${newStaff.name} as ${newStaff.role}?`)) return;
 
     try {
-      setAdding(true);
-      const res = await fetch(`${API_BASE_URL}/api/staff/add`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newStaff),
-      });
-
-      const data = await safeParse(res);
-
-      if (res.ok) {
-        toast.success(data.message || "Staff added");
-        setNewStaff({ name: "", email: "", role: "staff" });
-        setPage(1);
-        await fetchStaff();
-      } else {
-        toast.error(data.message || "Failed to add staff");
-      }
-    } catch {
-      toast.error("Failed to add staff");
+      setIdLoading(id, true);
+    
+      const { data } = await api.patch(
+        `/api/staff/update-role/${id}`,
+        { role: newRole }
+      );
+    
+      toast.success(data?.message || "Role updated");
+      await fetchStaff();
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to update role");
     } finally {
-      setAdding(false);
+      setIdLoading(id, false);
     }
   };
 
@@ -262,21 +252,13 @@ const StaffManagement = () => {
 
     try {
       setIdLoading(id, true);
-
-      const res = await fetch(`${API_BASE_URL}/api/staff/delete/${id}`, {
-        method: "DELETE",
-      });
-
-      const data = await safeParse(res);
-
-      if (res.ok) {
-        toast.success(data?.message || "Staff deleted");
-        await fetchStaff();
-      } else {
-        toast.error(data?.message || "Failed to delete staff");
-      }
-    } catch {
-      toast.error("Failed to delete staff");
+    
+      const { data } = await api.delete(`/api/staff/delete/${id}`);
+    
+      toast.success(data?.message || "Staff deleted");
+      await fetchStaff();
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to delete staff");
     } finally {
       setIdLoading(id, false);
     }
