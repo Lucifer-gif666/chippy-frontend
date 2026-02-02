@@ -29,10 +29,16 @@ const ProtectedRoute = ({ children }) => {
 
 const AdminRoute = ({ children }) => {
   const staff = JSON.parse(localStorage.getItem("currentStaff"));
+
   if (!staff) return <Navigate to="/staff-login" />;
-  if (staff.role !== "admin") return <Navigate to="/staff-dashboard" />;
+
+  if (!["admin", "super_admin"].includes(staff.role)) {
+    return <Navigate to="/staff-dashboard" />;
+  }
+
   return children;
 };
+
 
 const App = () => {
   return (

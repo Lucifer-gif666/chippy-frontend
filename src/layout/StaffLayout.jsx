@@ -20,6 +20,9 @@ const StaffLayout = ({ children }) => {
   const user = JSON.parse(localStorage.getItem("currentStaff"));
   const location = useLocation();
 
+  // ✅ ADMIN + SUPER ADMIN
+  const isPrivileged = ["admin", "super_admin"].includes(user?.role);
+
   const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
 
   // 🔐 Auto logout function
@@ -40,12 +43,11 @@ const StaffLayout = ({ children }) => {
     };
 
     const events = ["mousemove", "keydown", "click", "scroll", "touchstart"];
-
     events.forEach((event) =>
       window.addEventListener(event, resetIdleTimer)
     );
 
-    resetIdleTimer(); // start timer initially
+    resetIdleTimer();
 
     return () => {
       clearTimeout(idleTimerRef.current);
@@ -68,7 +70,8 @@ const StaffLayout = ({ children }) => {
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    return () =>
+      document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   // Auto close sidebar on route change
@@ -76,14 +79,16 @@ const StaffLayout = ({ children }) => {
     setIsSidebarOpen(false);
   }, [location]);
 
-  // Fetch unread notifications safely
+  // Fetch unread notifications
   const fetchUnreadNotifications = async () => {
     try {
       if (!user?._id) return;
 
-      const res = await axios.get(`/api/notifications?staffId=${user._id}`);
-      const notifications = Array.isArray(res.data) ? res.data : [];
+      const res = await axios.get(
+        `/api/notifications?staffId=${user._id}`
+      );
 
+      const notifications = Array.isArray(res.data) ? res.data : [];
       const unread = notifications.filter(
         (n) => !n.readBy?.includes(user._id)
       ).length;
@@ -96,11 +101,10 @@ const StaffLayout = ({ children }) => {
 
   useEffect(() => {
     fetchUnreadNotifications();
-    const interval = setInterval(fetchUnreadNotifications, 10000); // every 10s
+    const interval = setInterval(fetchUnreadNotifications, 10000);
     return () => clearInterval(interval);
   }, []);
 
-  // Handler to decrease unread count when a notification is read
   const handleNotificationRead = () => {
     setUnreadCount((prev) => (prev > 0 ? prev - 1 : 0));
   };
@@ -116,7 +120,7 @@ const StaffLayout = ({ children }) => {
 
   return (
     <div className="dashboard-container">
-      {/* Fixed Header */}
+      {/* Header */}
       <Header
         toggleSidebar={toggleSidebar}
         hamburgerRef={hamburgerRef}
@@ -124,12 +128,11 @@ const StaffLayout = ({ children }) => {
         onMarkAsRead={handleNotificationRead}
       />
 
-      {/* Body wrapper */}
       <div className="layout-body">
         {/* Sidebar */}
         <div
           ref={sidebarRef}
-          className={`sidebar transition-transform duration-300 ease-in-out ${
+          className={`sidebar ${
             isSidebarOpen ? "open" : "closed"
           }`}
         >
@@ -137,7 +140,9 @@ const StaffLayout = ({ children }) => {
             <li>
               <Link
                 to="/staff-dashboard"
-                className={location.pathname === "/staff-dashboard" ? "active" : ""}
+                className={
+                  location.pathname === "/staff-dashboard" ? "active" : ""
+                }
               >
                 Dashboard
               </Link>
@@ -146,7 +151,9 @@ const StaffLayout = ({ children }) => {
             <li>
               <Link
                 to="/raise-ticket"
-                className={location.pathname === "/raise-ticket" ? "active" : ""}
+                className={
+                  location.pathname === "/raise-ticket" ? "active" : ""
+                }
               >
                 Raise Ticket
               </Link>
@@ -155,13 +162,15 @@ const StaffLayout = ({ children }) => {
             <li>
               <Link
                 to="/all-tickets"
-                className={location.pathname === "/all-tickets" ? "active" : ""}
+                className={
+                  location.pathname === "/all-tickets" ? "active" : ""
+                }
               >
                 All Tickets
               </Link>
             </li>
 
-            {user?.role === "admin" && (
+            {isPrivileged && (
               <li>
                 <Link
                   to="/assign-tickets"
@@ -177,7 +186,9 @@ const StaffLayout = ({ children }) => {
             <li>
               <Link
                 to="/my-tickets"
-                className={location.pathname === "/my-tickets" ? "active" : ""}
+                className={
+                  location.pathname === "/my-tickets" ? "active" : ""
+                }
               >
                 My Tickets
               </Link>
@@ -194,13 +205,15 @@ const StaffLayout = ({ children }) => {
               </Link>
             </li>
 
-            {user?.role === "admin" && (
+            {isPrivileged && (
               <>
                 <li>
                   <Link
                     to="/staff-management"
                     className={
-                      location.pathname === "/staff-management" ? "active" : ""
+                      location.pathname === "/staff-management"
+                        ? "active"
+                        : ""
                     }
                   >
                     Staff Management
@@ -211,7 +224,9 @@ const StaffLayout = ({ children }) => {
                   <Link
                     to="/zone-management"
                     className={
-                      location.pathname === "/zone-management" ? "active" : ""
+                      location.pathname === "/zone-management"
+                        ? "active"
+                        : ""
                     }
                   >
                     Zone Management
