@@ -1,17 +1,27 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { toast } from "react-toastify";
 import StaffLayout from "../layout/StaffLayout";
+import api from "../api/axios";
 import "../styles/StaffManagement.css";
-
 
 // ✅ API base URL from env (NO localhost hardcode)
 const API_BASE_URL = import.meta.env.VITE_API_URL;
+
+// 🔐 Role options based on current user
+const ROLE_OPTIONS = {
+  super_admin: ["admin", "maintenance", "staff"],
+  admin: ["maintenance", "staff"],
+};
 
 const StaffManagement = () => {
   const [allStaff, setAllStaff] = useState([]);
   const [staffList, setStaffList] = useState([]);
 
-  const [newStaff, setNewStaff] = useState({ name: "", email: "", role: "staff" });
+  const [newStaff, setNewStaff] = useState({
+    name: "",
+    email: "",
+    role: "staff",
+  });
   const [search, setSearch] = useState("");
   const [sortOrder, setSortOrder] = useState("asc");
   const [roleFilter, setRoleFilter] = useState("all");
@@ -27,10 +37,11 @@ const StaffManagement = () => {
   const [allTickets, setAllTickets] = useState([]);
   const [ticketsLoading, setTicketsLoading] = useState(false);
 
-  const currentUserId = localStorage.getItem("userId");
+  const currentUser = JSON.parse(localStorage.getItem("currentStaff"));
+  const currentUserId = currentUser?._id;
+  const currentUserRole = currentUser?.role;
 
-  // NEW: Active Tab
-  const [activeTab, setActiveTab] = useState("staff-list"); // "staff-list" or "staff-performance"
+  const [activeTab, setActiveTab] = useState("staff-list");
 
   const safeParse = async (res) => {
     try {
@@ -71,14 +82,8 @@ const StaffManagement = () => {
   const fetchTickets = useCallback(async () => {
     setTicketsLoading(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/tickets`);
-      const data = await safeParse(res);
-      if (Array.isArray(data)) {
-        setAllTickets(data);
-      } else {
-        setAllTickets([]);
-        toast.error("Failed to fetch tickets");
-      }
+      const { data } = await api.get("/api/tickets");
+      setAllTickets(Array.isArray(data) ? data : []);
     } catch {
       setAllTickets([]);
       toast.error("Failed to fetch tickets");
@@ -117,7 +122,6 @@ const StaffManagement = () => {
     setStaffList(filtered.slice(start, start + limit));
   }, [allStaff, search, roleFilter, sortOrder, page]);
 
-  // Reset to first page when filters/search/sort or tab change
   useEffect(() => {
     setPage(1);
   }, [search, roleFilter, sortOrder, activeTab]);
@@ -172,15 +176,29 @@ const StaffManagement = () => {
   const setIdLoading = (id, v) =>
     setActionLoadingIds((prev) => ({ ...prev, [id]: v }));
 
-  const handleRoleChange = async (id, newRole) => {
+  const handleRoleChange = async (id, newRole, staffRole) => {
     if (id === currentUserId) {
       toast.error("You cannot change your own role");
       return;
     }
-
+  
+    // ❌ Admin cannot assign admin / super_admin
+    if (
+      currentUserRole === "admin" &&
+      (newRole === "admin" || newRole === "super_admin")
+    ) {
+      toast.error("Admins cannot assign admin or super admin roles");
+      return;
+    }
+  
+    // ❌ Super admin role cannot be changed at all
+    if (staffRole === "super_admin") {
+      toast.error("Super admin role cannot be changed");
+      return;
+    }
+  
     if (!window.confirm("Are you sure you want to change this user's role?"))
       return;
-
     try {
       setIdLoading(id, true);
 
@@ -245,34 +263,15 @@ const StaffManagement = () => {
     try {
       setIdLoading(id, true);
 
-      const urls = [
-        `${API_BASE_URL}/api/staff/${id}`,
-        `${API_BASE_URL}/api/staff/delete/${id}`,
-      ];
+      const res = await fetch(`${API_BASE_URL}/api/staff/delete/${id}`, {
+        method: "DELETE",
+      });
 
-      let res, data;
+      const data = await safeParse(res);
 
-      for (const url of urls) {
-        try {
-          res = await fetch(url, { method: "DELETE" });
-          data = await safeParse(res);
-          if (res.ok) break;
-        } catch {}
-      }
-
-      if (res?.ok) {
+      if (res.ok) {
         toast.success(data?.message || "Staff deleted");
         await fetchStaff();
-
-        setTimeout(() => {
-          setPage((p) => {
-            const newTotal = Math.max(
-              1,
-              Math.ceil((allStaff.length - 1) / limit)
-            );
-            return Math.min(p, newTotal);
-          });
-        }, 0);
       } else {
         toast.error(data?.message || "Failed to delete staff");
       }
@@ -283,16 +282,14 @@ const StaffManagement = () => {
     }
   };
 
-  // STAFF PERFORMANCE COMPUTATION
   const filteredStaffForPerformance = allStaff
     .filter((staff) => {
       const s = search.trim().toLowerCase();
-      const matchesSearch =
-        staff.name.toLowerCase().includes(s) ||
-        staff.email.toLowerCase().includes(s);
-      const matchesRole =
-        roleFilter === "all" ? true : staff.role === roleFilter;
-      return matchesSearch && matchesRole;
+      return (
+        (roleFilter === "all" || staff.role === roleFilter) &&
+        (staff.name.toLowerCase().includes(s) ||
+          staff.email.toLowerCase().includes(s))
+      );
     })
     .sort((a, b) =>
       sortOrder === "asc"
@@ -300,22 +297,18 @@ const StaffManagement = () => {
         : b.name.localeCompare(a.name)
     );
 
-    const staffPerformance = filteredStaffForPerformance.map((staff) => {
-      // Tickets created by this staff
-      const createdTickets = allTickets.filter(
-        (t) => t.createdBy === staff.name
-      ).length;      
-    
-      // Tickets resolved by this staff
-      const resolvedTickets = allTickets.filter(
-        (t) => t.resolvedBy === staff.name && t.status === "Resolved"
-      ).length;
-      
-    
-      return { ...staff, createdTickets, resolvedTickets };
-    });
-    
-    
+  const staffPerformance = filteredStaffForPerformance.map((staff) => {
+    const createdTickets = allTickets.filter(
+      (t) => t.createdBy === staff.name
+    ).length;
+
+    const resolvedTickets = allTickets.filter(
+      (t) => t.resolvedBy === staff.name && t.status === "Resolved"
+    ).length;
+
+    return { ...staff, createdTickets, resolvedTickets };
+  });
+
   return (
     <StaffLayout>
       <div className="staff-management-container">
@@ -395,8 +388,12 @@ const StaffManagement = () => {
                 }
                 disabled={adding}
               >
-                <option value="staff">Staff</option>
-                <option value="admin">Admin</option>
+               {ROLE_OPTIONS[currentUserRole]?.map((role) => (
+  <option key={role} value={role}>
+    {role.replace("_", " ").toUpperCase()}
+  </option>
+))}
+
               </select>
               <button onClick={handleAddStaff} disabled={adding}>
                 {adding ? "Adding..." : "Add Staff"}
@@ -415,7 +412,7 @@ const StaffManagement = () => {
               />
 
               <div className="role-pills">
-                {["all", "admin", "staff"].map((role) => (
+                {["all", "super_admin", "admin", "maintenance", "staff"].map((role) => (
                   <button
                     key={role}
                     className={roleFilter === role ? "pill active" : "pill"}
@@ -462,14 +459,25 @@ const StaffManagement = () => {
                       <div className="staff-role">
                         <label>Role:</label>
                         <select
-                          value={staff.role}
-                          onChange={(e) =>
-                            handleRoleChange(staff._id, e.target.value)
-                          }
-                          disabled={!!actionLoadingIds[staff._id]}
-                        >
-                          <option value="staff">Staff</option>
-                          <option value="admin">Admin</option>
+  value={staff.role}
+  onChange={(e) =>
+    handleRoleChange(staff._id, e.target.value, staff.role)
+  }
+  disabled={
+    !!actionLoadingIds[staff._id] ||
+    staff.role === "super_admin" ||
+    (currentUserRole === "admin" && staff.role === "admin")
+  }
+>
+
+                         {ROLE_OPTIONS[currentUserRole]
+  ?.filter((r) => r !== staff.role)
+  .map((role) => (
+    <option key={role} value={role}>
+      {role.replace("_", " ").toUpperCase()}
+    </option>
+))}
+
                         </select>
                       </div>
 
@@ -498,15 +506,17 @@ const StaffManagement = () => {
                         </button>
 
                         <button
-                          onClick={() =>
-                            handleDeleteStaff(staff._id, staff.name)
-                          }
-                          disabled={!!actionLoadingIds[staff._id]}
-                          className="pill"
-                          style={{ marginLeft: 8 }}
-                        >
-                          Delete
-                        </button>
+  onClick={() => handleDeleteStaff(staff._id, staff.name)}
+  disabled={
+    staff.role === "super_admin" ||
+    (currentUserRole === "admin" && staff.role === "admin")
+  }
+  className="pill"
+  style={{ marginLeft: 8 }}
+>
+  Delete
+</button>
+
                       </div>
                     </div>
                   </div>
@@ -557,7 +567,7 @@ const StaffManagement = () => {
               />
 
               <div className="role-pills">
-                {["all", "admin", "staff"].map((role) => (
+                {["admin", "maintenance", "staff"].map((role) => (
                   <button
                     key={role}
                     className={roleFilter === role ? "pill active" : "pill"}
