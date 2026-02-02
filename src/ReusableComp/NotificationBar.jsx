@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+{/*import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "../styles/NotificationBar.css";
@@ -105,7 +105,7 @@ const NotificationBar = ({ isOpen, onClose, unreadCount, onMarkAsRead }) => {
 
   return (
     <div ref={dropdownRef} className="notification-dropdown">
-      {/* HEADER */}
+
       <div className="notification-header">
         <h3>Notifications ({notifications.length})</h3>
 
@@ -120,7 +120,7 @@ const NotificationBar = ({ isOpen, onClose, unreadCount, onMarkAsRead }) => {
         )}
       </div>
 
-      {/* BODY */}
+
       <div className="notification-body">
         {loading ? (
           <div className="notification-state">Loading...</div>
@@ -153,4 +153,4 @@ const NotificationBar = ({ isOpen, onClose, unreadCount, onMarkAsRead }) => {
   );
 };
 
-export default NotificationBar;
+export default NotificationBar; */}
