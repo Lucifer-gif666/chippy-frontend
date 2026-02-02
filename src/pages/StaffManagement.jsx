@@ -363,7 +363,7 @@ const StaffManagement = () => {
                 }
                 disabled={adding}
               />
-              <select
+             <select
   value={staff.role}
   onChange={(e) =>
     handleRoleChange(staff._id, e.target.value, staff.role)
@@ -374,12 +374,12 @@ const StaffManagement = () => {
     (currentUserRole === "admin" && staff.role === "admin")
   }
 >
-  {/* Current role (disabled, just for display) 
+  {/* current role (display only) */}
   <option value={staff.role} disabled>
     {staff.role.replace("_", " ").toUpperCase()}
-  </option> */}
+  </option>
 
-  {/* Allowed target roles */}
+  {/* allowed transitions */}
   {ROLE_OPTIONS[currentUserRole]
     ?.filter((r) => r !== staff.role)
     .map((role) => (
