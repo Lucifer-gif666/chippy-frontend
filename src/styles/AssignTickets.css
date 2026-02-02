@@ -412,3 +412,144 @@
     font-size: 0.8rem;
   }
 }
+
+
+/* ================================
+   External Vendor Modal Styles
+================================ */
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 12px;
+}
+
+.modal {
+  background: #ffffff;
+  width: 100%;
+  max-width: 420px;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+  animation: modalFadeIn 0.25s ease-out;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.modal h3 {
+  margin: 0 0 16px;
+  font-size: 18px;
+  font-weight: 600;
+  text-align: center;
+  color: #222;
+}
+
+/* Inputs */
+.modal input,
+.modal textarea {
+  width: 100%;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+  border-radius: 8px;
+  border: 1px solid #d0d0d0;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.modal textarea {
+  resize: none;
+  min-height: 70px;
+}
+
+.modal input:focus,
+.modal textarea:focus {
+  border-color: #e27814;
+  box-shadow: 0 0 0 2px rgba(226, 120, 20, 0.15);
+}
+
+/* Actions */
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.modal-actions button {
+  flex: 1;
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+}
+
+/* Cancel */
+.modal-actions button:first-child {
+  background: #f0f0f0;
+  color: #333;
+}
+
+.modal-actions button:first-child:hover {
+  background: #e0e0e0;
+}
+
+/* Assign */
+.modal-actions button:last-child {
+  background: #e27814;
+  color: #fff;
+}
+
+.modal-actions button:last-child:hover {
+  background: #cc6b10;
+}
+
+.modal-actions button:active {
+  transform: scale(0.97);
+}
+
+/* ================================
+   Mobile Responsiveness
+================================ */
+
+@media (max-width: 480px) {
+  .modal {
+    max-width: 100%;
+    padding: 16px;
+    border-radius: 10px;
+  }
+
+  .modal h3 {
+    font-size: 16px;
+  }
+
+  .modal input,
+  .modal textarea {
+    font-size: 13px;
+    padding: 9px 10px;
+  }
+
+  .modal-actions button {
+    font-size: 13px;
+    padding: 9px;
+  }
+}

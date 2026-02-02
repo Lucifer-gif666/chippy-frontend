@@ -15,6 +15,19 @@ const AssignTickets = () => {
   const [tickets, setTickets] = useState([]);
   const [staffList, setStaffList] = useState([]);
 
+  // 🔹 External Vendor Modal State
+const [showVendorModal, setShowVendorModal] = useState(false);
+const [selectedTicketForVendor, setSelectedTicketForVendor] = useState(null);
+
+const [vendorData, setVendorData] = useState({
+  companyName: "",
+  contactPerson: "",
+  phone: "",
+  visitDate: "",
+  remarks: "",
+});
+
+
   // Filters
   const [filterText, setFilterText] = useState("");
   const [filterZone, setFilterZone] = useState("");
@@ -331,31 +344,82 @@ const AssignTickets = () => {
                 </div>
 
                 <div className="assign-section">
-                  <select
-                    value=""
-                    onChange={(e) => handleAssign(t._id, e.target.value)}
-                    disabled={normalizeStatus(t.status) === "resolved"}
-                  >
-                    <option value="" disabled hidden>
-                      {t.assignedToId
-                        ? normalizeStatus(t.status) === "resolved"
-                          ? "Resolved - cannot reassign"
-                          : "Reassign Staff"
-                        : "Assign Staff"}
-                    </option>
-                    {staffList
-  .filter(
-    (s) =>
-      s.role !== "admin" && // 🚫 hide admins
-      String(s._id) !== String(t.assignedToId)
-  )
-  .map((s) => (
-    <option key={s._id} value={s._id}>
-      {s.name}
-    </option>
-  ))}
+                <select
+  value=""
+  onChange={(e) => {
+    if (e.target.value === "external") {
+      setSelectedTicketForVendor(t);
+      setShowVendorModal(true);
+    } else {
+      handleAssign(t._id, e.target.value);
+    }
+  }}
+  disabled={normalizeStatus(t.status) === "resolved"}
+>
 
-                  </select>
+  <option value="" disabled hidden>
+    {t.assignedToId
+      ? normalizeStatus(t.status) === "resolved"
+        ? "Resolved - cannot reassign"
+        : "Reassign"
+      : "Assign"}
+  </option>
+
+  {/* 🛠 MAINTENANCE */}
+  <optgroup label="Maintenance">
+    {staffList
+      .filter(
+        (s) =>
+          s.role === "maintenance" &&
+          s.role !== "super-admin" &&
+          String(s._id) !== String(currentStaff._id) &&
+          String(s._id) !== String(t.assignedToId)
+      )
+      .map((s) => (
+        <option key={s._id} value={s._id}>
+          {s.name}
+        </option>
+      ))}
+  </optgroup>
+
+  {/* 👷 STAFF */}
+  <optgroup label="Staff">
+    {staffList
+      .filter(
+        (s) =>
+          s.role === "staff" &&
+          s.role !== "super-admin" &&
+          String(s._id) !== String(currentStaff._id) &&
+          String(s._id) !== String(t.assignedToId)
+      )
+      .map((s) => (
+        <option key={s._id} value={s._id}>
+          {s.name}
+        </option>
+      ))}
+  </optgroup>
+
+  {/* 🧑‍💼 ADMIN */}
+  <optgroup label="Admin">
+    {staffList
+      .filter(
+        (s) =>
+          s.role === "admin" &&
+          s.role !== "super-admin" &&
+          String(s._id) !== String(currentStaff._id) &&
+          String(s._id) !== String(t.assignedToId)
+      )
+      .map((s) => (
+        <option key={s._id} value={s._id}>
+          {s.name}
+        </option>
+      ))}
+  </optgroup>
+  <optgroup label="External">
+  <option value="external">External Vendor</option>
+</optgroup>
+</select>
+
                 </div>
 
                 <LastUpdated
@@ -397,6 +461,91 @@ const AssignTickets = () => {
           </button>
         </div>
       )}
+
+{showVendorModal && (
+  <div className="modal-overlay">
+    <div className="modal">
+      <h3>Assign External Vendor</h3>
+
+      <input
+        placeholder="Vendor Company Name *"
+        value={vendorData.companyName}
+        onChange={(e) =>
+          setVendorData({ ...vendorData, companyName: e.target.value })
+        }
+      />
+
+      <input
+        placeholder="Contact Person"
+        value={vendorData.contactPerson}
+        onChange={(e) =>
+          setVendorData({ ...vendorData, contactPerson: e.target.value })
+        }
+      />
+
+      <input
+        placeholder="Contact Number"
+        value={vendorData.phone}
+        onChange={(e) =>
+          setVendorData({ ...vendorData, phone: e.target.value })
+        }
+      />
+
+      <input
+        type="date"
+        value={vendorData.visitDate}
+        onChange={(e) =>
+          setVendorData({ ...vendorData, visitDate: e.target.value })
+        }
+      />
+
+      <textarea
+        placeholder="Remarks"
+        value={vendorData.remarks}
+        onChange={(e) =>
+          setVendorData({ ...vendorData, remarks: e.target.value })
+        }
+      />
+
+      <div className="modal-actions">
+        <button
+          onClick={() => {
+            setShowVendorModal(false);
+            setVendorData({
+              companyName: "",
+              contactPerson: "",
+              phone: "",
+              visitDate: "",
+              remarks: "",
+            });
+          }}
+        >
+          Cancel
+        </button>
+
+        <button
+          onClick={() => {
+            if (!vendorData.companyName) {
+              toast.error("Vendor company name is required");
+              return;
+            }
+
+            console.log("External Vendor Assigned:", {
+              ticketId: selectedTicketForVendor?.ticketId,
+              vendorData,
+            });
+
+            toast.success("External vendor assigned");
+            setShowVendorModal(false);
+          }}
+        >
+          Assign Vendor
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
     </StaffLayout>
   );
 };
