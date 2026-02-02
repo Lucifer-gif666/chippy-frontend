@@ -69,9 +69,10 @@ const Header = ({ toggleSidebar, hamburgerRef, unreadCount = 0, onNotificationCl
         </Link>
       </div>
 
-      <div className="flex items-center gap-4">
-        {/* Notification Icon */}
-        <div className="relative">
+ <div className="flex items-center gap-4">
+        
+    
+     {/*    <div className="relative">
           <button
             type="button"
             onClick={handleNotificationClick}
@@ -86,14 +87,14 @@ const Header = ({ toggleSidebar, hamburgerRef, unreadCount = 0, onNotificationCl
             )}
           </button>
 
-          {/* Notification Dropdown */}
+       
           <NotificationBar
             isOpen={isNotificationOpen}
             onClose={() => setIsNotificationOpen(false)}
             unreadCount={unread}
             onMarkAsRead={handleMarkAsRead}
           />
-        </div>
+        </div> */}
 
         {/* Profile Dropdown */}
         <ProfileDropdown user={user} onLogout={handleLogout} />
