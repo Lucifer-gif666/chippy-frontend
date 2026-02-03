@@ -123,6 +123,16 @@ const StaffManagement = () => {
   useEffect(() => {
     setPage(1);
   }, [search, roleFilter, sortOrder, activeTab]);
+  
+  // ✅ Reset filters when switching to Staff Performance tab
+  useEffect(() => {
+    if (activeTab === "staff-performance") {
+      setRoleFilter("all");
+      setSearch("");
+      setPage(1);
+    }
+  }, [activeTab]);
+  
 
   useEffect(() => {
     fetchStaff();
@@ -270,17 +280,21 @@ const StaffManagement = () => {
         : b.name.localeCompare(a.name)
     );
 
-  const staffPerformance = filteredStaffForPerformance.map((staff) => {
-    const createdTickets = allTickets.filter(
-      (t) => t.createdBy === staff.name
-    ).length;
-
-    const resolvedTickets = allTickets.filter(
-      (t) => t.resolvedBy === staff.name && t.status === "Resolved"
-    ).length;
-
-    return { ...staff, createdTickets, resolvedTickets };
-  });
+    const staffPerformance = filteredStaffForPerformance.map((staff) => {
+      const createdTickets = allTickets.filter(
+        (t) => t.createdById === staff._id ||
+        t.createdBy === staff.name
+      ).length;
+    
+      const resolvedTickets = allTickets.filter(
+        (t) =>
+          t.resolvedById === staff._id &&
+          (t.status === "Resolved" || t.status === "Closed")
+      ).length;
+    
+      return { ...staff, createdTickets, resolvedTickets };
+    });
+     
 
   return (
     <StaffLayout>
@@ -545,19 +559,23 @@ const StaffManagement = () => {
                 onChange={(e) => setSearch(e.target.value)}
               />
 
-              <div className="role-pills">
-                {["admin", "maintenance", "staff"].map((role) => (
-                  <button
-                    key={role}
-                    className={roleFilter === role ? "pill active" : "pill"}
-                    onClick={() => setRoleFilter(role)}
-                  >
-                    {role === "all"
-                      ? "All"
-                      : role.charAt(0).toUpperCase() + role.slice(1)}
-                  </button>
-                ))}
-              </div>
+<div className="role-pills">
+  {["all", "admin", "maintenance", "staff"].map((role) => (
+    <button
+      key={role}
+      className={roleFilter === role ? "pill active" : "pill"}
+      onClick={() => {
+        setRoleFilter(role);
+        setPage(1);
+      }}
+    >
+      {role === "all"
+        ? "All"
+        : role.charAt(0).toUpperCase() + role.slice(1)}
+    </button>
+  ))}
+</div>
+
 
             </div>
 

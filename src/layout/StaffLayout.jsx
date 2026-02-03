@@ -19,7 +19,16 @@ const StaffLayout = ({ children }) => {
 
   const user = JSON.parse(localStorage.getItem("currentStaff"));
   const location = useLocation();
-
+  
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const staff = localStorage.getItem("currentStaff");
+  
+    if (!token || !staff) {
+      window.location.href = "/staff-login";
+    }
+  }, []);
+  
   // ✅ ADMIN + SUPER ADMIN
   const isPrivileged = ["admin", "super_admin"].includes(user?.role);
 
@@ -29,7 +38,7 @@ const StaffLayout = ({ children }) => {
   const handleAutoLogout = () => {
     localStorage.removeItem("currentStaff");
     localStorage.removeItem("token");
-    window.location.href = "/login";
+    window.location.href = "/staff-login";
   };
 
   // 🕒 Idle logout logic
