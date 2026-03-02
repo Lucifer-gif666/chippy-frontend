@@ -14,6 +14,7 @@ import AssignTickets from "./pages/AssignTickets";
 import StaffManagement from "./pages/StaffManagement";
 import MyTickets from "./pages/MyTickets";
 import TicketHistory from "./pages/TicketHistory";
+import MaintenanceScreen from "./pages/Maintenance";
 
 // ⭐ New Pages
 import ForgotPassword from "./pages/ForgetPassword";
@@ -39,9 +40,15 @@ const AdminRoute = ({ children }) => {
   return children;
 };
 
+const MAINTENANCE_MODE = true; // 🔁 change to false when done
 
 const App = () => {
+  
+   if (MAINTENANCE_MODE) {
+    return <MaintenanceScreen />;
+  }
   return (
+    
     <BrowserRouter>
       <Routes>
         {/* Public login pages */}
