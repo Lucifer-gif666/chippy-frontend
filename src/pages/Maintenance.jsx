@@ -146,7 +146,7 @@ export default function MaintenanceScreen() {
 
         {/* Footer */}
         <div style={s.footer}>
-          <p>Need urgent help? Contact your admin or email <span style={s.link}>support@chippy.app</span></p>
+          <p>Need urgent help? Contact your admin or email <span style={s.link}>tharundev.levro@gmail.com</span></p>
           <p style={s.footNote}>We apologize for the inconvenience and appreciate your patience.</p>
         </div>
       </div>
