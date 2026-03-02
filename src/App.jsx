@@ -40,10 +40,10 @@ const AdminRoute = ({ children }) => {
   return children;
 };
 
-const MAINTENANCE_MODE = true; // 🔁 change to false when done
+const MAINTENANCE_MODE = false; // 🔁 change to false when done
 
 const App = () => {
-  
+
    if (MAINTENANCE_MODE) {
     return <MaintenanceScreen />;
   }
